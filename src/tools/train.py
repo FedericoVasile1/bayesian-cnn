@@ -26,7 +26,7 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
         input_channels = 1
         num_classes = 10
         transform = transforms.Compose([
-            transforms.Resize(32),
+            transforms.Resize(32),  # in order to have the same size as MNIST and CRC
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,)),
         ])
@@ -62,7 +62,7 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
                                                                          [n_train_samples, n_val_samples])
         dataloader['train'] = torch.utils.data.DataLoader(dataset['train'],
                                                           batch_size,
-                                                          False)
+                                                          True)
         dataloader['val'] = torch.utils.data.DataLoader(dataset['val'],
                                                         batch_size,
                                                         False)
@@ -105,8 +105,6 @@ def main(args):
             training = True if phase == 'train' else False
             with torch.set_grad_enabled(training):
                 for batch_idx, (images, targets) in enumerate(dataloader[phase], start=1):
-                    if batch_idx > 2:
-                        break
                     batch_size = images.shape[0]
 
                     if training:

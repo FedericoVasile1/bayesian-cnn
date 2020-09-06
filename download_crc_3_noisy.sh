@@ -1,3 +1,4 @@
+mkdir data
 mkdir data/crc_3_noisy
 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1-1QvVxUSieDiz0apIHGRUr_CjngJufq6' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1-1QvVxUSieDiz0apIHGRUr_CjngJufq6" -O data/crc_3_noisy/Y_train.npy && rm -rf /tmp/cookies.txt
 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1J2kqbDdOoUfl3mOlxE9RrAMT980-IlJ5' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1J2kqbDdOoUfl3mOlxE9RrAMT980-IlJ5" -O data/crc_3_noisy/Y_test.npy && rm -rf /tmp/cookies.txti
