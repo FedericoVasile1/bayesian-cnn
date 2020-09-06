@@ -5,3 +5,12 @@ venv/
 
 *.npy
 */*.npy
+
+data/
+
+.idea
+
+__pycache__
+*/__pycache__
+*/*/__pycache__
+*/*/*/__pycache__
