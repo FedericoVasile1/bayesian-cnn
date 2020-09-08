@@ -13,7 +13,7 @@ class BiologicalDataset(Dataset):
             self.X = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_test.npy'))
             self.y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_test.npy'))
 
-        self.X = np.transpose(self.X, (2, 0, 1))       # channel first
+        self.X = np.transpose(self.X, (0, 3, 1, 2))       # channel first
         self.X = self.X.astype('float32')
 
     def __getitem__(self, item):
