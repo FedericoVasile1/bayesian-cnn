@@ -98,7 +98,6 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=6, verbose=True)
     criterion = nn.CrossEntropyLoss().to(device)
-
     model.train(True)       # always true since we are using variational dropout
 
     writer = SummaryWriter()
@@ -118,6 +117,8 @@ def main(args):
             training = True if phase == 'train' else False
             with torch.set_grad_enabled(training):
                 for batch_idx, (images, targets) in enumerate(dataloader[phase], start=1):
+                    if batch_idx > 2:
+                        break
                     batch_size = images.shape[0]
 
                     if training:

@@ -6,7 +6,6 @@ from torch.utils.data import Dataset
 class BiologicalDataset(Dataset):
     def __init__(self, train=True):
         if train:
-            print(os.getcwd())
             self.X = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_train.npy'))
             self.y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_train.npy'))
         else:
