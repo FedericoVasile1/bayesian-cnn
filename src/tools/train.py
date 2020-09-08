@@ -139,18 +139,18 @@ def main(args):
         lr_sched.step(loss_epoch['val']/len(dataloader['val'].dataset))
 
         end = time.time()
-        print('[{}]  Loss: {:.4f}  Accuracy: {:.1f}%  |[{}]  Loss: {:.4f}  Accuracy: {:.1f}%'.
+        print('Epoch: {}  |[{}]  Loss: {:.4f}  Accuracy: {:.1f}%  |[{}]  Loss: {:.4f}  Accuracy: {:.1f}%  |Running time: {:.1f}s'.
               format('train',
                      loss_epoch['train'] / len(dataloader['train'].dataset),
                      accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100,
                      'val',
                      loss_epoch['val'] / len(dataloader['val'].dataset),
-                     accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100))
-        print('Running time: {:.1f}s'.format(end - start))
+                     accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100),
+                     end - start)
         writer.add_scalar('Loss_epoch/train', loss_epoch['train'] / len(dataloader['train'].dataset), epoch)
         writer.add_scalar('Loss_epoch/val', loss_epoch['val'] / len(dataloader['val'].dataset), epoch)
-        writer.add_scalar('Accuracy_epoch/train', accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100)
-        writer.add_scalar('Accuracy_epoch/val', accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100)
+        writer.add_scalar('Accuracy_epoch/train', accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100, epoch)
+        writer.add_scalar('Accuracy_epoch/val', accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100, epoch)
 
 if __name__ == '__main__':
     base_dir = os.getcwd()
