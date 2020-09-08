@@ -17,10 +17,11 @@ def main(args):
     checkpoint_file = 'model-{}-dataset-{}-dropout-{}.pth'.format(args.model,
                                                                   args.dataset,
                                                                   args.dropout)
-    if os.path.isfile(args.checkpoint):
-        checkpoint = torch.load(args.checkpoint)
+    checkpoint_path = os.path.join(os.getcwd(), 'src', 'tools', 'checkpoints', checkpoint_file)
+    if os.path.isfile(checkpoint_path):
+        checkpoint = torch.load(checkpoint_path)
     else:
-        raise(RuntimeError('Cannot find the checkpoint {}'.format(args.checkpoint)))
+        raise(RuntimeError('Cannot find the checkpoint {}'.format(checkpoint_path)))
     model = load_model(args.model, input_channels, num_classes, args.dropout)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.train(True)           # always true since we are using variational dropout
@@ -43,7 +44,7 @@ def main(args):
             accuracy += (scores.argmax(dim=1) == targets).sum().item()
     end = time.time()
     print('Accuracy on test set: {:.1f}%  |Running time: {:.1f}s'.
-          format(accuracy / len(dataloader['test'].dataset) * 100), end - start)
+          format(accuracy / len(dataloader['test'].dataset) * 100, end - start))
 
 if __name__ == '__main__':
     base_dir = os.getcwd()
@@ -58,7 +59,6 @@ if __name__ == '__main__':
     parser.add_argument('--dropout', default=0.5, type=float)
 
     parser.add_argument('--batch_size', default=256, type=int)
-    parser.add_argument('--checkpoint', default='', type=str)
 
     args = parser.parse_args()
     main(args)
