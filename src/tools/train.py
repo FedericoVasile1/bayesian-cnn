@@ -81,7 +81,6 @@ def load_model(model, input_channels, num_classes, dropout):
     else:
         raise Exception('Wrong --model option; ' + model + ' is not supported.'
                         ' Supported models: [3CONV3FC]')
-
     return model
 
 def main(args):
@@ -89,6 +88,9 @@ def main(args):
     save_dir = os.path.join(this_dir, 'checkpoints')
     if not os.path.isdir(save_dir):
         os.makedirs(save_dir)
+    checkpoint_file = 'model-{}-dataset-{}-dropout-{}.pth'.format(args.model,
+                                                                  args.dataset,
+                                                                  args.dropout)
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -106,6 +108,8 @@ def main(args):
     f.write(command)
     f.close()
 
+    best_val_accuracy = -1
+    best_epoch = -1
     phases = ['train', 'val']
     model = model.to(device)
     for epoch in range(1, args.epochs+1, 1):
@@ -117,8 +121,6 @@ def main(args):
             training = True if phase == 'train' else False
             with torch.set_grad_enabled(training):
                 for batch_idx, (images, targets) in enumerate(dataloader[phase], start=1):
-                    if batch_idx > 2:
-                        break
                     batch_size = images.shape[0]
 
                     if training:
@@ -142,7 +144,7 @@ def main(args):
                               format(phase, epoch, args.epochs, batch_idx, loss.item()))
                     writer.add_scalar('Loss_iter/'+phase, loss.item(), batch_idx)
 
-        lr_sched.step(loss_epoch['val']/len(dataloader['val'].dataset))
+        lr_sched.step(loss_epoch['val'] / len(dataloader['val'].dataset))
 
         end = time.time()
         print('Epoch: {:3} |[{}]  Loss: {:.4f}  Accuracy: {:.1f}%  |[{}]  Loss: {:.4f}  Accuracy: {:.1f}%  |Running time: {:.1f}s'.
@@ -159,15 +161,15 @@ def main(args):
         writer.add_scalar('Accuracy_epoch/train', accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100, epoch)
         writer.add_scalar('Accuracy_epoch/val', accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100, epoch)
 
-        checkpoint_file = 'epoch-{}-model-{}-dataset-{}-dropout-{}.pth'.format(epoch,
-                                                                               args.model,
-                                                                               args.dataset,
-                                                                               args.dropout)
-        torch.save({
-            'epoch': epoch,
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-        }, os.path.join(save_dir, checkpoint_file))
+        if best_val_accuracy < (accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100):
+            best_val_accuracy  = accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100
+            best_epoch = -1
+            torch.save({
+                'epoch': epoch,
+                'model_state_dict': model.state_dict(),
+                'optimizer_state_dict': optimizer.state_dict(),
+            }, os.path.join(save_dir, checkpoint_file))
+    print('--- Best validation accuracy is {:.1f}% obtained at epoch {} ---'.format(best_val_accuracy, best_epoch))
 
 if __name__ == '__main__':
     base_dir = os.getcwd()
