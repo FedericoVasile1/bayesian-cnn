@@ -1,3 +1,11 @@
+import torch
+from torchvision import datasets
+from torch.utils.tensorboard import SummaryWriter
+
+from PIL import Image
+import cv2
+
+import io
 import os
 import numpy as np
 import matplotlib.pyplot as plt
@@ -77,11 +85,83 @@ def plot_confusion_matrix(y_true, y_pred, normalize=True, figsize=(7, 7), title=
     plt.xlabel('Predicted label')
     plt.grid(False)
 
+def matplotlib_imshow(img):
+    """
+    Helper function to show an image
+    @param img: Numpy array of shape (C, H, W) representing an image. Pay attention to the fact that the image
+                here must be unnormalized, i.e. elements in range [0, 255] and dtype == uint8
+    """
+    C, _, _ = img.shape
+    img = img.numpy()
+    if C == 1:
+        plt.imshow(img.squeeze(axis=0), cmap="Greys")
+    elif C == 3:
+        plt.imshow(img.transpose((1, 2, 0)))
+    else:
+        raise Exception('Wrong number of input image channels. Expected 1 or 3, ' + C + ' provided.')
+
+def plot_to_image(figure):
+      """Converts the matplotlib plot specified by 'figure' to a PNG image and
+      returns it. The supplied figure is closed and inaccessible after this call."""
+      # Save the plot to a PNG in memory.
+      buf = io.BytesIO()
+      plt.savefig(buf, format='png')
+      # Closing the figure prevents it from being displayed directly inside
+      # the notebook.
+      plt.close(figure)
+      buf.seek(0)
+      # Convert PNG buffer to numpy array
+      image = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+      buf.close()
+
+      image = cv2.imdecode(image, 1)
+      image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+      return image
+
+def stats_classes(dataset_name, train=True, figsize=(5, 5), show_image=False):
+    if dataset_name == 'CRC':
+        y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_train.npy' if train else 'Y_test.npy'))
+        y = torch.from_numpy(y)
+    elif dataset_name == 'MNIST':
+        dataset = datasets.MNIST(root=os.path.join(os.getcwd(), 'data'), train=train, download=True)
+        y = dataset.targets
+    elif dataset_name == 'CIFAR10':
+        dataset = datasets.MNIST(root=os.path.join(os.getcwd(), 'data'), train=train, download=True)
+        y = dataset.targets
+    else:
+        raise Exception('Wrong --dataset option; ' + dataset_name + ' is not supported.'
+                        ' Supported datasets: [CRC|MNIST|CIFAR10]')
+
+    assert len(y.shape) == 1
+    figure = plt.figure(figsize=figsize)
+
+    classes_and_counts = torch.unique(y, sorted=True, return_counts=True)
+    idx_classes = classes_and_counts[0].numpy()
+    num_classes = len(idx_classes)
+    colors = plt.get_cmap('Blues')(np.linspace(0, 1, num_classes))[::-1]
+
+    # for each class generate a color: the more elements a class have and the more darker the color associated will be
+    class_to_count = {classes_and_counts[0][idx].item(): classes_and_counts[1][idx].item()
+                      for idx in range(num_classes)}
+    class_to_count = sorted(class_to_count.items(), key=lambda x: x[1], reverse=True)
+    ordered_classes = [idx_and_count[0] for idx_and_count in class_to_count]
+    new_seq_colors = np.zeros_like(colors)
+    for idx, idx_class in enumerate(ordered_classes):
+        new_seq_colors[idx_class] = colors[idx]
+
+    plt.bar(classes_and_counts[0], classes_and_counts[1], color=new_seq_colors)
+    plt.xticks(classes_and_counts[0])
+    plt.xlabel('Class')
+    plt.ylabel('Frequency')
+    if show_image:
+        plt.show()
+    return figure
+
 if __name__ == '__main__':
     # WARNING: this module is not intended to be runnable, so this main is only for testing purposes
-    X_train = np.load(os.path.join('..', '..', 'data', 'X_train.npy'))
-    Y_train = np.load(os.path.join('..', '..', 'data', 'Y_train.npy'))
-    mean_image = np.load(os.path.join('..', '..', 'data', 'mean_x_train.npy'))
+    X_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_train.npy'))
+    Y_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_train.npy'))
+    mean_image = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'mean_x_train.npy'))
 
     X_train *= 255.
     X_train[:, :, :, 0] += mean_image[0]
@@ -90,6 +170,14 @@ if __name__ == '__main__':
     X_train = X_train.astype('uint8')
 
     if True:
+        dataset = 'MNIST'
+        writer = SummaryWriter()
+        a = stats_classes(dataset)
+        b = plot_to_image(a)
+        writer.add_image(dataset+'_classes', np.transpose(b, (2, 0, 1)), 0)
+        writer.close()
+
+    if False:
         plot_random_images(X_train, Y_train, examples=16, fig_suptitle='X_train_samples', figsize=(6, 6))
         plt.show()
 

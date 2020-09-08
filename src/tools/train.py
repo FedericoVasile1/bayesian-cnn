@@ -2,10 +2,12 @@ import torch
 import torch.nn as nn
 from torchvision import transforms
 from torchvision import datasets
+from torch.utils.tensorboard import SummaryWriter
 
 import argparse
 import time
 import os
+import sys
 
 import _init_paths
 from src.datasets.BiologicalDataset import BiologicalDataset
@@ -94,6 +96,12 @@ def main(args):
 
     model.train(True)       # always true since we are using variational dropout
 
+    writer = SummaryWriter()
+    command = 'python ' + ' '.join(sys.argv)
+    f = open(writer.log_dir + '/run_command.txt', 'w+')
+    f.write(command)
+    f.close()
+
     phases = ['train', 'val']
     model = model.to(device)
     for epoch in range(1, args.epochs+1, 1):
@@ -126,18 +134,23 @@ def main(args):
                     if args.verbose:
                         print('[{:5}] Epoch: {}/{}  Iteration: {}  Loss: {:.4f}'.
                               format(phase, epoch, args.epochs, batch_idx, loss.item()))
+                    writer.add_scalar('Loss_iter/'+phase, loss.item(), batch_idx)
 
         lr_sched.step(loss_epoch['val']/len(dataloader['val'].dataset))
 
         end = time.time()
         print('[{}]  Loss: {:.4f}  Accuracy: {:.1f}%  |[{}]  Loss: {:.4f}  Accuracy: {:.1f}%'.
               format('train',
-                     loss_epoch['train']/len(dataloader['train'].dataset),
-                     accuracy_epoch['train']/len(dataloader['train'].dataset) * 100,
+                     loss_epoch['train'] / len(dataloader['train'].dataset),
+                     accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100,
                      'val',
-                     loss_epoch['val']/len(dataloader['val'].dataset),
-                     accuracy_epoch['val']/len(dataloader['val'].dataset) * 100))
+                     loss_epoch['val'] / len(dataloader['val'].dataset),
+                     accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100))
         print('Running time: {:.1f}s'.format(end - start))
+        writer.add_scalar('Loss_epoch/train', loss_epoch['train'] / len(dataloader['train'].dataset), epoch)
+        writer.add_scalar('Loss_epoch/val', loss_epoch['val'] / len(dataloader['val'].dataset), epoch)
+        writer.add_scalar('Accuracy_epoch/train', accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100)
+        writer.add_scalar('Accuracy_epoch/val', accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100)
 
 if __name__ == '__main__':
     base_dir = os.getcwd()
