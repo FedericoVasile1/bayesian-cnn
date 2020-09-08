@@ -85,6 +85,11 @@ def load_model(model, input_channels, num_classes, dropout):
     return model
 
 def main(args):
+    this_dir = os.path.join(os.path.dirname(__file__), '.')
+    save_dir = os.path.join(this_dir, 'checkpoints')
+    if not os.path.isdir(save_dir):
+        os.makedirs(save_dir)
+
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     dataloader, input_channels, num_classes = load_dataset(args.dataset, args.val_split, args.batch_size)
@@ -151,6 +156,16 @@ def main(args):
         writer.add_scalar('Loss_epoch/val', loss_epoch['val'] / len(dataloader['val'].dataset), epoch)
         writer.add_scalar('Accuracy_epoch/train', accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100, epoch)
         writer.add_scalar('Accuracy_epoch/val', accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100, epoch)
+
+        checkpoint_file = 'epoch-{}-model-{}-dataset-{}-dropout-{}.pth'.format(epoch,
+                                                                               args.model,
+                                                                               args.dataset,
+                                                                               args.dropout)
+        torch.save({
+            'epoch': epoch,
+            'model_state_dict': model.module.state_dict() if args.distributed else model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+        }, os.path.join(save_dir, checkpoint_file))
 
 if __name__ == '__main__':
     base_dir = os.getcwd()
