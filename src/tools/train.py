@@ -8,6 +8,7 @@ import argparse
 import time
 import os
 import sys
+import json
 
 import _init_paths
 from src.datasets.BiologicalDataset import BiologicalDataset
@@ -25,8 +26,6 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
                         ' Supported modes: [train|test]')
 
     if dataset_name == 'MNIST':
-        input_channels = 1
-        num_classes = 10
         transform = transforms.Compose([
             transforms.Resize(32),  # in order to have the same size as MNIST and CRC
             transforms.ToTensor(),
@@ -37,8 +36,6 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
                                        download=True,
                                        transform=transform)
     elif dataset_name == 'CIFAR10':
-        input_channels = 3
-        num_classes = 10
         transform = transforms.Compose([
             transforms.ToTensor(),
             # values taken from: https://github.com/kuangliu/pytorch-cifar/issues/19
@@ -49,8 +46,6 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
                                          download=True,
                                          transform=transform)
     elif dataset_name == 'CRC':
-        input_channels = 3
-        num_classes = 3
         dataset[mode] = BiologicalDataset(train)
     else:
         raise Exception('Wrong --dataset option; ' + dataset_name + ' is not supported.'
@@ -73,7 +68,7 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
                                                          batch_size,
                                                          False)
 
-    return dataloader, input_channels, num_classes
+    return dataloader
 
 def load_model(model, input_channels, num_classes, dropout):
     if model == '3CONV3FC':
@@ -94,8 +89,8 @@ def main(args):
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    dataloader, input_channels, num_classes = load_dataset(args.dataset, args.val_split, args.batch_size)
-    model = load_model(args.model, input_channels, num_classes, args.dropout)
+    dataloader = load_dataset(args.dataset, args.val_split, args.batch_size)
+    model = load_model(args.model, args.input_channels, args.num_classes, args.dropout)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=6, verbose=True)
@@ -163,7 +158,7 @@ def main(args):
 
         if best_val_accuracy < (accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100):
             best_val_accuracy  = accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100
-            best_epoch = -1
+            best_epoch = epoch
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
@@ -190,6 +185,14 @@ if __name__ == '__main__':
     parser.add_argument('--val_split', default=0.2, type=float)
 
     parser.add_argument('--verbose', action='store_true')
+    parser.add_argument('--data_info',  default='data/data_info.json' ,type=str)
 
     args = parser.parse_args()
+
+    with open(args.data_info, 'r') as f:
+        data_info = json.load(f)[args.dataset]
+    args.class_index = data_info['class_index']
+    args.input_channels = data_info['input_channels']
+    args.num_classes = len(args.class_index)
+
     main(args)

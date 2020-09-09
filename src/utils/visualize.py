@@ -12,12 +12,18 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import itertools
 
-def plot_random_images(images, labels=None, idxlabel_to_namelabel=None, examples=16, fig_suptitle=None, figsize=(8, 8), fpath=None):
+def plot_random_images(images,
+                       labels=None,
+                       class_index=None,
+                       examples=16,
+                       fig_suptitle=None,
+                       figsize=(8, 8),
+                       fpath=None):
     '''
     Given a 'images' dataset a random subset is selected and showed
     @param images: Numpy array of shape (N, H, W, C) with pixels in range [0, 1] float or [0, 255] int
     @param labels: Numpy array of shape (N,) containing the labels of the images
-    @param idxlabel_to_namelabel: Python list containing at position i the name of class i
+    @param class_index: Python list containing at position i the name of class i
     @param examples: int number of samples to randomly draw from images
     @param fig_suptitle: String containing the figure title
     @param figsize: tuple of int containing height and width of the figure
@@ -41,7 +47,7 @@ def plot_random_images(images, labels=None, idxlabel_to_namelabel=None, examples
 
         if labels is not None:
             idx_y = labels[imgs_index[idx]]
-            y = idxlabel_to_namelabel[idx_y]
+            y = class_index[idx_y]
             axes[idx].set_title(str(imgs_index[idx]) + ': ' + y)
 
     fig.suptitle(fig_suptitle, fontsize=12)
@@ -51,7 +57,7 @@ def plot_random_images(images, labels=None, idxlabel_to_namelabel=None, examples
 
 def plot_confusion_matrix(y_true,
                           y_pred,
-                          idx_to_nameclass,
+                          class_index,
                           normalize=True,
                           figsize=(7, 7),
                           title='Confusion matrix',
@@ -61,7 +67,7 @@ def plot_confusion_matrix(y_true,
     It constructs and plot a confusion matrix.
     @param y_true: Numpy array of shape (N,) containing the true labels
     @param y_pred: Numpy array of shape (N,) containing the predicted labels
-    @param idx_to_nameclass: list containing at index i the name of i-th class
+    @param class_index: list containing at index i the name of i-th class
     @param normalize: boolean indicating if normalize confusion matrix or not
     @param figsize: int tuple containing the size of the figure
     @param title: string, the title of the confusion matrix
@@ -76,9 +82,9 @@ def plot_confusion_matrix(y_true,
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
-    tick_marks = np.arange(len(idx_to_nameclass))
-    plt.xticks(tick_marks, idx_to_nameclass, rotation=45)
-    plt.yticks(tick_marks, idx_to_nameclass)
+    tick_marks = np.arange(len(class_index))
+    plt.xticks(tick_marks, class_index, rotation=45)
+    plt.yticks(tick_marks, class_index)
 
     fmt = '.2f' if normalize else 'd'
     thresh = cm.max() / 2.
@@ -95,9 +101,9 @@ def plot_confusion_matrix(y_true,
         plt.show()
     return figure
 
-def my_histogram(data, figsize=(8, 5), color='b', title=None, show_image=False):
+def plot_histogram(data, figsize=(8, 5), color='b', title=None, show_image=False):
     figure = plt.figure(figsize=figsize)
-    plt.hist(data, bins=25, color=color)
+    plt.hist(data, bins=25, color=color, linewidth=1.2, edgecolor='black')
     plt.title(title, color='black')
     plt.xlabel('F(std)')
     plt.ylabel('# of images')
@@ -121,24 +127,29 @@ def matplotlib_imshow(img):
         raise Exception('Wrong number of input image channels. Expected 1 or 3, ' + C + ' provided.')
 
 def plot_to_image(figure):
-      """Converts the matplotlib plot specified by 'figure' to a PNG image and
-      returns it. The supplied figure is closed and inaccessible after this call."""
-      # Save the plot to a PNG in memory.
-      buf = io.BytesIO()
-      plt.savefig(buf, format='png')
-      # Closing the figure prevents it from being displayed directly inside
-      # the notebook.
-      plt.close(figure)
-      buf.seek(0)
-      # Convert PNG buffer to numpy array
-      image = np.frombuffer(buf.getvalue(), dtype=np.uint8)
-      buf.close()
+    """Converts the matplotlib plot specified by 'figure' to a PNG image and
+    returns it. The supplied figure is closed and inaccessible after this call."""
+    # Save the plot to a PNG in memory.
+    buf = io.BytesIO()
+    plt.savefig(buf, format='png')
+    # Closing the figure prevents it from being displayed directly inside
+    # the notebook.
+    plt.close(figure)
+    buf.seek(0)
+    # Convert PNG buffer to numpy array
+    image = np.frombuffer(buf.getvalue(), dtype=np.uint8)
+    buf.close()
 
-      image = cv2.imdecode(image, 1)
-      image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-      return image
+    image = cv2.imdecode(image, 1)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    return image
 
-def stats_classes(dataset_name, train=True, figsize=(5, 5), show_image=False):
+def save_fig_to_tensorboard(fig, writer, title):
+    fig = plot_to_image(fig)
+    writer.add_image(title, np.transpose(fig, (2, 0, 1)), 0)
+    writer.close()
+
+def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_image=False):
     if dataset_name == 'CRC':
         y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_train.npy' if train else 'Y_test.npy'))
         y = torch.from_numpy(y)
@@ -170,7 +181,8 @@ def stats_classes(dataset_name, train=True, figsize=(5, 5), show_image=False):
         new_seq_colors[idx_class] = colors[idx]
 
     plt.bar(classes_and_counts[0], classes_and_counts[1], color=new_seq_colors)
-    plt.xticks(classes_and_counts[0])
+    #plt.xticks(classes_and_counts[0])
+    plt.xticks(class_index, rotation=45)
     plt.xlabel('Class')
     plt.ylabel('Frequency')
     if show_image:
@@ -208,4 +220,3 @@ if __name__ == '__main__':
         Y_true = Y_train[idx_samples]
         plot_confusion_matrix(Y_true, Y_pred)
         plt.show()
-
