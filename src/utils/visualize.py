@@ -49,29 +49,36 @@ def plot_random_images(images, labels=None, idxlabel_to_namelabel=None, examples
     if fpath:
         fig.savefig(fpath)
 
-def plot_confusion_matrix(y_true, y_pred, normalize=True, figsize=(7, 7), title='Confusion matrix', cmap=plt.cm.Greys):
+def plot_confusion_matrix(y_true,
+                          y_pred,
+                          idx_to_nameclass,
+                          normalize=True,
+                          figsize=(7, 7),
+                          title='Confusion matrix',
+                          cmap=plt.cm.Greys,
+                          show_image=False):
     '''
     It constructs and plot a confusion matrix.
     @param y_true: Numpy array of shape (N,) containing the true labels
     @param y_pred: Numpy array of shape (N,) containing the predicted labels
+    @param idx_to_nameclass: list containing at index i the name of i-th class
     @param normalize: boolean indicating if normalize confusion matrix or not
     @param figsize: int tuple containing the size of the figure
     @param title: string, the title of the confusion matrix
     @param cmap: color of the confusion matrix
     '''
     cm = confusion_matrix(y_true, y_pred)
-    classes = ['H', 'AC', 'AD']
     if normalize:
         cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
     else:
         print('Confusion matrix without normalization')
-    plt.figure(figsize=figsize)
+    figure = plt.figure(figsize=figsize)
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
+    tick_marks = np.arange(len(idx_to_nameclass))
+    plt.xticks(tick_marks, idx_to_nameclass, rotation=45)
+    plt.yticks(tick_marks, idx_to_nameclass)
 
     fmt = '.2f' if normalize else 'd'
     thresh = cm.max() / 2.
@@ -84,6 +91,19 @@ def plot_confusion_matrix(y_true, y_pred, normalize=True, figsize=(7, 7), title=
     plt.ylabel('True label')
     plt.xlabel('Predicted label')
     plt.grid(False)
+    if show_image:
+        plt.show()
+    return figure
+
+def my_histogram(data, figsize=(8, 5), color='b', title=None, show_image=False):
+    figure = plt.figure(figsize=figsize)
+    plt.hist(data, bins=25, color=color)
+    plt.title(title, color='black')
+    plt.xlabel('F(std)')
+    plt.ylabel('# of images')
+    if show_image:
+        plt.show()
+    return figure
 
 def matplotlib_imshow(img):
     """
