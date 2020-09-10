@@ -6,7 +6,10 @@ venv/
 *.npy
 */*.npy
 
-data/
+data/cifar-10-batches-py
+data/crc_3_noisy
+data/MNIST
+data/cifar-10-python.tar.gz
 
 .idea
 

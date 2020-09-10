@@ -25,7 +25,7 @@ def string_to_int_conversion():
         real_classes = np.where(real_classes == 'glass', 5, real_classes)
         real_classes = np.where(real_classes == 'stroma', 6, real_classes)
 
-        real_classes = real_classes.astype('uint8')
+        real_classes = real_classes.astype('int64')
         np.save(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_'+phase+'_int.npy'), real_classes)
 
 if __name__ == '__main__':

@@ -58,7 +58,10 @@ def main(args):
         scores_all = torch.cat(scores_all)
         targets_all = torch.cat(targets_all)
         title = 'Confusion matrix - {}/K=1'.format(args.dataset)
-        fig = plot_confusion_matrix(targets_all.numpy(), scores_all.numpy(), args.class_index, title)
+        fig = plot_confusion_matrix(targets_all.cpu().detach().numpy(),
+                                    scores_all.cpu().detach().numpy(),
+                                    args.class_index,
+                                    title)
         save_fig_to_tensorboard(fig, writer, title)
 
         print('Inference on test set computing uncertainties with K={} ...'.format(args.K))
@@ -89,21 +92,24 @@ def main(args):
         predicted_class_variance_all = torch.cat(predicted_class_variance_all)
 
         title = 'Confusion matrix - {}/K={}'.format(args.dataset, args.K)
-        fig = plot_confusion_matrix(targets_all.numpy(), scores_all.numpy(), args.class_index, title)
+        fig = plot_confusion_matrix(targets_all.cpu().detach().numpy(),
+                                    scores_all.cpu().detach().numpy(),
+                                    args.class_index,
+                                    title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '{} test/All predictions'.format(args.dataset)
-        fig = plot_histogram(predicted_class_variance_all.numpy(), color='b', title=title)
+        fig = plot_histogram(predicted_class_variance_all.cpu().detach().numpy(), color='b', title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '{} test/Correct predictions'.format(args.dataset)
-        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all].numpy(),
+        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all].cpu().detach().numpy(),
                              color='green',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '{} test/Wrong predictions'.format(args.dataset)
-        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all].numpy(),
+        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all].cpu().detach().numpy(),
                              color='red',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)

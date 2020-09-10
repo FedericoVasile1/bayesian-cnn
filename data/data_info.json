@@ -1,0 +1,1 @@
+{"CRC": {"class_index": ["AC", "AD", "H", "blood", "fat", "glass", "stroma"], "input_channels":  3}, "MNIST": {"class_index": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"], "input_channels":  1}, "CIFAR10": {"class_index": ["Airplane", "Automobile", "Bird", "Cat", "Deer", "Dog", "Frog", "Horse", "Ship", "Truck"], "input_channels":  3}}
