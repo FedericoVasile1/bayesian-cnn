@@ -67,7 +67,6 @@ def main(args):
         print('Inference on test set computing uncertainties with K={} ...'.format(args.K))
         predictions_uncertainty_all = []
         predicted_class_variance_all = []
-        scores_all = []
         targets_all = []
         accuracy = 0
         start = time.time()
@@ -76,24 +75,22 @@ def main(args):
             predictions_uncertainty, predicted_class_variance = compute_uncertainties(model, images, K=args.K)
             predictions_uncertainty_all.append(predictions_uncertainty)
             predicted_class_variance_all.append(predicted_class_variance)
+            targets_all.append(targets)
 
             targets = targets.to(device)
             accuracy += (predictions_uncertainty == targets).sum().item()
 
-            scores_all.append(scores)
-            targets_all.append(targets)
         end = time.time()
         print('... Accuracy on test set: {:.1f}%  |Running time: {:.1f}s'.
               format(accuracy / len(dataloader['test'].dataset) * 100, end - start))
 
-        scores_all = torch.cat(scores_all)
         targets_all = torch.cat(targets_all)
         predictions_uncertainty_all = torch.cat(predictions_uncertainty_all)
         predicted_class_variance_all = torch.cat(predicted_class_variance_all)
 
         title = 'Confusion matrix - {}/K={}'.format(args.dataset, args.K)
         fig = plot_confusion_matrix(targets_all.cpu().detach().numpy(),
-                                    scores_all.cpu().detach().numpy(),
+                                    predictions_uncertainty_all.cpu().detach().numpy(),
                                     args.class_index,
                                     title)
         save_fig_to_tensorboard(fig, writer, title)
