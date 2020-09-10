@@ -55,11 +55,11 @@ def main(args):
         print('... Accuracy on test set: {:.1f}%  |Running time: {:.1f}s\n'.
               format(accuracy / len(dataloader['test'].dataset) * 100, end - start))
 
-        scores_all = torch.cat(scores_all)
-        targets_all = torch.cat(targets_all)
+        scores_all = torch.cat(scores_all).cpu().detach().numpy()
+        targets_all = torch.cat(targets_all).cpu().detach().numpy()
         title = 'Confusion matrix - {}/K=1'.format(args.dataset)
-        fig = plot_confusion_matrix(targets_all.cpu().detach().numpy(),
-                                    scores_all.cpu().detach().numpy(),
+        fig = plot_confusion_matrix(targets_all,
+                                    scores_all,
                                     args.class_index,
                                     title)
         save_fig_to_tensorboard(fig, writer, title)
@@ -73,40 +73,40 @@ def main(args):
         for batch_idx, (images, targets) in enumerate(dataloader['test'], start=1):
             images = images.to(device)
             predictions_uncertainty, predicted_class_variance = compute_uncertainties(model, images, K=args.K)
-            predictions_uncertainty_all.append(predictions_uncertainty)
-            predicted_class_variance_all.append(predicted_class_variance)
-            targets_all.append(targets)
 
             targets = targets.to(device)
             accuracy += (predictions_uncertainty == targets).sum().item()
 
+            predictions_uncertainty_all.append(predictions_uncertainty)
+            predicted_class_variance_all.append(predicted_class_variance)
+            targets_all.append(targets)
         end = time.time()
         print('... Accuracy on test set: {:.1f}%  |Running time: {:.1f}s'.
               format(accuracy / len(dataloader['test'].dataset) * 100, end - start))
 
-        targets_all = torch.cat(targets_all)
-        predictions_uncertainty_all = torch.cat(predictions_uncertainty_all)
-        predicted_class_variance_all = torch.cat(predicted_class_variance_all)
+        targets_all = torch.cat(targets_all).cpu().detach().numpy()
+        predictions_uncertainty_all = torch.cat(predictions_uncertainty_all).cpu().detach().numpy()
+        predicted_class_variance_all = torch.cat(predicted_class_variance_all).cpu().detach().numpy()
 
         title = 'Confusion matrix - {}/K={}'.format(args.dataset, args.K)
-        fig = plot_confusion_matrix(targets_all.cpu().detach().numpy(),
-                                    predictions_uncertainty_all.cpu().detach().numpy(),
+        fig = plot_confusion_matrix(targets_all,
+                                    predictions_uncertainty_all,
                                     args.class_index,
                                     title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '{} test/All predictions'.format(args.dataset)
-        fig = plot_histogram(predicted_class_variance_all.cpu().detach().numpy(), color='b', title=title)
+        fig = plot_histogram(predicted_class_variance_all, color='b', title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '{} test/Correct predictions'.format(args.dataset)
-        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all].cpu().detach().numpy(),
+        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all],
                              color='green',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '{} test/Wrong predictions'.format(args.dataset)
-        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all].cpu().detach().numpy(),
+        fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all],
                              color='red',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
