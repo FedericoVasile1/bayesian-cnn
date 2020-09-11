@@ -1,6 +1,5 @@
 import torch
-
-import numpy as np
+import torch.nn.functional as F
 
 def compute_uncertainties(net, X, K=100):
     """
@@ -16,6 +15,7 @@ def compute_uncertainties(net, X, K=100):
     p_hat = []
     for k in range(K):
         scores = net(X)          # preds.shape == (n_samples, n_classes)
+        scores = F.softmax(scores, dim=1)
         p_hat.append(scores)
 
     p_hat = torch.stack(p_hat)
@@ -55,5 +55,6 @@ def compute_uncertainties_softmax(net, X):
     @return std_predictions: Pytorch tensor of shape (n_samples, ) containing the std associated to the prediction
     """
     scores = net(X)      # preds.shape == (n_samples, n_classes)
+    scores = F.softmax(scores, dim=1)
     std_predictions = torch.std(scores, axis=1)
     return std_predictions
