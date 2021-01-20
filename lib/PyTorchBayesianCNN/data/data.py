@@ -1,10 +1,11 @@
+import os
+
 import numpy as np
 import torch
 import torchvision
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 from torch.utils.data.sampler import SubsetRandomSampler
-
 
 class CustomDataset(Dataset):
     def __init__(self, data, labels, transform=None):
@@ -23,6 +24,25 @@ class CustomDataset(Dataset):
 
         return sample, label
 
+class BiologicalDataset(Dataset):
+    def __init__(self, train=True):
+        # load all dataset in memory since it's lightweight
+        if train:
+            self.X = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_train.npy'))
+            self.y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_train_int.npy'))
+        else:
+            self.X = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_test.npy'))
+            self.y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_test_int.npy'))
+
+        self.X = np.transpose(self.X, (0, 3, 1, 2))       # channel first
+        self.X = self.X.astype(np.float32)
+        self.y = self.y.astype(np.float32)
+
+    def __getitem__(self, item):
+        return torch.as_tensor(self.X[item]), torch.as_tensor(self.y[item])
+
+    def __len__(self):
+        return len(self.y)
 
 def extract_classes(dataset, classes):
     idx = torch.zeros_like(dataset.targets, dtype=torch.bool)
@@ -41,14 +61,17 @@ def getDataset(dataset):
         ])
 
     transform_mnist = transforms.Compose([
-        transforms.Resize((32, 32)),
+        #transforms.Resize((32, 32)),
         transforms.ToTensor(),
+        transforms.Normalize((0.1307,), (0.3081,)),
         ])
 
     transform_cifar = transforms.Compose([
-        transforms.Resize((32, 32)),
-        transforms.RandomHorizontalFlip(),
+        #transforms.Resize((32, 32)),
+        #transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
+        # values taken from: https://github.com/kuangliu/pytorch-cifar/issues/19
+        transforms.Normalize(mean=(0.4914, 0.4822, 0.4465), std=(0.247, 0.243, 0.261)),
         ])
 
     if(dataset == 'CIFAR10'):
@@ -68,6 +91,12 @@ def getDataset(dataset):
         testset = torchvision.datasets.MNIST(root='./data', train=False, download=True, transform=transform_mnist)
         num_classes = 10
         inputs = 1
+
+    elif(dataset == 'CRC'):
+        trainset = BiologicalDataset(train=True)
+        testset = BiologicalDataset(train=False)
+        num_classes = 7
+        inputs = 2
 
     elif(dataset == 'SplitMNIST-2.1'):
         trainset = torchvision.datasets.MNIST(root='./data', train=True, download=True, transform=transform_mnist)

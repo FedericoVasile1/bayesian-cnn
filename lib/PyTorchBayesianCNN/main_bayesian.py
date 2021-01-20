@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import argparse
+import random
 
 import torch
 import numpy as np
@@ -11,7 +12,6 @@ from torch.nn import functional as F
 import data
 import utils
 import metrics
-import config_bayesian as cfg
 from models.BayesianModels.Bayesian3Conv3FC import BBB3Conv3FC
 from models.BayesianModels.BayesianAlexNet import BBBAlexNet
 from models.BayesianModels.BayesianLeNet import BBBLeNet
@@ -24,7 +24,7 @@ def getModel(net_type, inputs, outputs, priors, layer_type, activation_type):
         return BBBLeNet(outputs, inputs, priors, layer_type, activation_type)
     elif (net_type == 'alexnet'):
         return BBBAlexNet(outputs, inputs, priors, layer_type, activation_type)
-    elif (net_type == '3conv3fc'):
+    elif (net_type == '3CONV3FC'):
         return BBB3Conv3FC(outputs, inputs, priors, layer_type, activation_type)
     else:
         raise ValueError('Network should be either [LeNet / AlexNet / 3Conv3FC')
@@ -85,22 +85,23 @@ def validate_model(net, criterion, validloader, num_ens=1, beta_type=0.1, epoch=
 
     return valid_loss/len(validloader), np.mean(accs)
 
-
-def run(dataset, net_type):
+def run(args):
+    dataset = args.dataset
+    net_type = args.net_type
 
     # Hyper Parameter settings
-    layer_type = cfg.layer_type
-    activation_type = cfg.activation_type
-    priors = cfg.priors
+    layer_type = args.layer_type
+    activation_type = args.activation_type
+    priors = args.priors
 
-    train_ens = cfg.train_ens
-    valid_ens = cfg.valid_ens
-    n_epochs = cfg.n_epochs
-    lr_start = cfg.lr_start
-    num_workers = cfg.num_workers
-    valid_size = cfg.valid_size
-    batch_size = cfg.batch_size
-    beta_type = cfg.beta_type
+    train_ens = args.train_ens
+    valid_ens = args.valid_ens
+    n_epochs = args.n_epochs
+    lr_start = args.lr_start
+    num_workers = args.num_workers
+    valid_size = args.valid_size
+    batch_size = args.batch_size
+    beta_type = args.beta_type
 
     trainset, testset, inputs, outputs = data.getDataset(dataset)
     train_loader, valid_loader, test_loader = data.getDataloader(
@@ -116,7 +117,8 @@ def run(dataset, net_type):
     criterion = metrics.ELBO(len(trainset)).to(device)
     optimizer = Adam(net.parameters(), lr=lr_start)
     lr_sched = lr_scheduler.ReduceLROnPlateau(optimizer, patience=6, verbose=True)
-    valid_loss_max = np.Inf
+    best_valid_acc = -1
+    best_valid_acc_epoch = -1
     for epoch in range(n_epochs):  # loop over the dataset multiple times
 
         train_loss, train_acc, train_kl = train_model(net, optimizer, criterion, train_loader, num_ens=train_ens, beta_type=beta_type, epoch=epoch, num_epochs=n_epochs)
@@ -127,16 +129,42 @@ def run(dataset, net_type):
             epoch, train_loss, train_acc, valid_loss, valid_acc, train_kl))
 
         # save model if validation accuracy has increased
-        if valid_loss <= valid_loss_max:
-            print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(
-                valid_loss_max, valid_loss))
+        if valid_loss > best_valid_acc:
+            #print('Validation loss decreased ({:.6f} --> {:.6f}).  Saving model ...'.format(
+            #    valid_loss_max, valid_loss))
             torch.save(net.state_dict(), ckpt_name)
-            valid_loss_max = valid_loss
+            best_valid_acc = valid_acc
+            best_valid_acc_epoch = epoch
+
+    log = '--- Best validation accuracy is {:.1f}% obtained at epoch {} ---'.format(best_valid_acc, best_valid_acc_epoch)
+    print(log)
+
+    # TODO: add testing phase
+    # TODO: add tensorboard
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description = "PyTorch Bayesian Model Training")
-    parser.add_argument('--net_type', default='lenet', type=str, help='model')
-    parser.add_argument('--dataset', default='MNIST', type=str, help='dataset = [MNIST/CIFAR10/CIFAR100]')
+    parser.add_argument('--net_type', default='lenet', type=str, help='model = [lenet/alexnet/3CONV3FC]')
+    parser.add_argument('--dataset', default='MNIST', type=str, help='dataset = [MNIST/CIFAR10/CIFAR100/CRC]')
+
+    parser.add_argument('--layer_type', default='lrt', type=str)        # 'bbb' or 'lrt'
+    parser.add_argument('--activation_type', default='softplus', type=str)  # 'softplus' or 'relu' or 'tanh'
+    parser.add_argument('--prior_mu', default=0, type=float)            #
+    parser.add_argument('--prior_sigma', default=0.1, type=float)
+    parser.add_argument('--posterior_mu_initial', default='0,0.1', type=str)    # (mean, std) normal_
+    parser.add_argument('--posterior_rho_initial', default='-5,0.1', type=str)  # (mean, std) normal_
+
+    parser.add_argument('--n_epochs', default=200, type=int)
+    parser.add_argument('--lr_start', default=0.001, type=float)
+    parser.add_argument('--num_workers', default=4, type=int)
+    parser.add_argument('--valid_size', default=0.2, type=float)
+    parser.add_argument('--batch_size', default=256, type=int)
+    parser.add_argument('--train_ens', default=1, type=int)     # the number of samples
+    parser.add_argument('--valid_ens', default=1, type=int)
+    parser.add_argument('--beta_type', default=0.1, type=float)     # 'Blundell', 'Standard', etc. Use float for const value
+
+    parser.add_argument('--seed', default=25, type=int)
+
     args = parser.parse_args()
 
-    run(args.dataset, args.net_type)
+    run(args, args.dataset, args.net_type)
