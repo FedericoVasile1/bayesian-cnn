@@ -25,7 +25,7 @@ def main(args):
     f.write(command)
     f.close()
 
-    dataloader = load_dataset(args.dataset, args.val_split, args.batch_size)
+    dataloader = load_dataset(args.dataset, args.val_split, args.batch_size, mode='train')
     model = load_model(args.model, args.input_channels, args.num_classes, args.activation_function, args.dropout, None, None)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)

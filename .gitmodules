@@ -1,0 +1,3 @@
+[submodule "lib/PyTorchBayesianCNN"]
+	path = lib/PyTorchBayesianCNN
+	url = git://github.com/kumar-shridhar/PyTorch-BayesianCNN.git

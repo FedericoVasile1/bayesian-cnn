@@ -17,8 +17,8 @@ def main(args):
     # settings
     prior_mu = args.prior_mu
     prior_sigma = args.prior_sigma
-    posterior_mu_initial = (float(args.posterior_mu_initial.split(',')[0]), float(args.posterior_mu_initial.split(',')[1]))
-    posterior_rho_initial = (float(args.posterior_rho_initial.split(',')[0]), float(args.posterior_rho_initial.split(',')[1]))
+    posterior_mu_initial = (int(args.posterior_mu_initial.split(',')[0]), float(args.posterior_mu_initial.split(',')[1]))
+    posterior_rho_initial = (int(args.posterior_rho_initial.split(',')[0]), float(args.posterior_rho_initial.split(',')[1]))
     priors = {'prior_mu': prior_mu,
               'prior_sigma': prior_sigma,
               'posterior_mu_initial': posterior_mu_initial,
@@ -37,14 +37,14 @@ def main(args):
     f.write(command)
     f.close()
 
-    dataloader = load_dataset(args.dataset, args.val_split, args.batch_size)
+    dataloader = load_dataset(args.dataset, args.val_split, args.batch_size, num_workers=args.num_workers, mode='train')
     model = load_model(args.model, args.input_channels, args.num_classes, args.activation_function, None, priors, args.layer_type)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=6, verbose=True)
     # TODO: better check the loss provided, is the implementation correct?
-    criterion = metrics.ELBO(None).to(device)
-    model.train(True)
+    criterion = metrics.ELBO(len(dataloader['train'].dataset)+len(dataloader['val'].dataset)).to(device)
+    #model.train(True)
 
     best_val_accuracy = -1
     best_epoch = -1
@@ -52,14 +52,16 @@ def main(args):
     model = model.to(device)
     for epoch in range(1, args.epochs+1, 1):
         start = time.time()
-        loss_epoch = {phase: 0 for phase in phases}
-        accuracy_epoch = {phase: 0 for phase in phases}
-        kl_epoch = {phase: 0 for phase in phases}
+        loss_epoch = {phase: 0.0 for phase in phases}
+        accuracy_epoch = {phase: 0.0 for phase in phases}
+        kl_epoch = {phase: 0.0 for phase in phases}
 
         for phase in phases:
             training = True if phase=='train' else False
             ens = args.train_ens if training else args.valid_ens
             with torch.set_grad_enabled(training):
+                model.train()
+
                 for batch_idx, (images, targets) in enumerate(dataloader[phase], start=1):
                     batch_size = images.shape[0]
                     images = images.to(device)
@@ -88,7 +90,7 @@ def main(args):
                         optimizer.step()
 
                     loss_epoch[phase] += loss.item() * batch_size
-                    accuracy_epoch[phase] += (scores.argmax(dim=1) == targets).sum().item()
+                    accuracy_epoch[phase] += (log_outputs.argmax(dim=1) == targets).sum().item()
                     kl_epoch[phase] += kl.item()
 
                     if args.verbose:
@@ -153,7 +155,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=256, type=int)
 
     parser.add_argument('--layer_type', default='lrt', type=str)        # 'bbb' or 'lrt'
-    parser.add_argument('--prior_mu', default=0, type=float)
+    parser.add_argument('--prior_mu', default=0, type=int)
     parser.add_argument('--prior_sigma', default=0.1, type=float)
     parser.add_argument('--posterior_mu_initial', default='0,0.1', type=str)    # (mean, std) normal_
     parser.add_argument('--posterior_rho_initial', default='-5,0.1', type=str)  # (mean, std) normal_
@@ -165,6 +167,7 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', default=200, type=int)
     parser.add_argument('--lr', default=0.001, type=float)
     parser.add_argument('--val_split', default=0.2, type=float)
+    parser.add_argument('--num_workers', default=4, type=int)
 
     parser.add_argument('--seed', default=25, type=int)
 

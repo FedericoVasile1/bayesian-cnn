@@ -11,9 +11,9 @@ class GlobalAvgPool(ModuleWrapper):
     def forward(self, x):
         return x.mean(dim=(2, 3))
 
-class V3Conv3FC(ModuleWrapper):
+class BBB3Conv3FC(ModuleWrapper):
     def __init__(self, outputs, inputs, priors, layer_type='lrt', activation_type='softplus'):
-        super(V3Conv3FC, self).__init__()
+        super(BBB3Conv3FC, self).__init__()
 
         self.num_classes = outputs
         self.layer_type = layer_type
@@ -35,7 +35,7 @@ class V3Conv3FC(ModuleWrapper):
         elif activation_type == 'tanh':
             self.act = nn.Tanh
         else:
-            raise ValueError("Only softplus,relu and tanh supported")
+            raise ValueError("Only softplus, relu and tanh supported")
 
         self.conv1 = BBBConv2d(inputs, 32, 5, padding=2, bias=True, priors=self.priors)
         self.act1 = self.act()
@@ -47,10 +47,8 @@ class V3Conv3FC(ModuleWrapper):
 
         self.conv3 = BBBConv2d(64, 128, 5, padding=1, bias=True, priors=self.priors)
         self.act3 = self.act()
-        # self.pool3 = nn.MaxPool2d(kernel_size=3, stride=2)
         self.pool3 = GlobalAvgPool()
 
-        #self.flatten = FlattenLayer(128)
         self.fc1 = BBBLinear(128, 256, bias=True, priors=self.priors)
         self.act4 = self.act()
 

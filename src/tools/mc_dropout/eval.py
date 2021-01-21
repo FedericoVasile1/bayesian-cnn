@@ -38,7 +38,7 @@ def main(args):
     f.write(command)
     f.close()
 
-    dataloader = load_dataset(args.dataset, None, args.batch_size, 'test')
+    dataloader = load_dataset(args.dataset, None, args.batch_size, mode='test')
 
     model = load_model(args.model, args.input_channels, args.num_classes, args.dropout)
     model.load_state_dict(checkpoint['model_state_dict'])

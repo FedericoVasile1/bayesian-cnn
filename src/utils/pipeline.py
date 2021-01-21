@@ -19,7 +19,7 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
-def load_dataset(dataset_name, val_split, batch_size, mode='train'):
+def load_dataset(dataset_name, val_split, batch_size, num_workers=4, mode='train'):
     if mode == 'train':
         train = True
         dataset = {phase: None for phase in ['train', 'val']}
@@ -64,14 +64,17 @@ def load_dataset(dataset_name, val_split, batch_size, mode='train'):
                                                                          [n_train_samples, n_val_samples])
         dataloader['train'] = torch.utils.data.DataLoader(dataset['train'],
                                                           batch_size,
-                                                          True)
+                                                          True,
+                                                          num_workers=num_workers)
         dataloader['val'] = torch.utils.data.DataLoader(dataset['val'],
                                                         batch_size,
-                                                        False)
+                                                        False,
+                                                        num_workers=num_workers)
     else:
         dataloader['test'] = torch.utils.data.DataLoader(dataset['test'],
                                                          batch_size,
-                                                         False)
+                                                         False,
+                                                         num_workers=num_workers)
 
     return dataloader
 
