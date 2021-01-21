@@ -19,5 +19,6 @@ __pycache__
 */*/*/__pycache__
 
 runs
+results
 
 src/tools/checkpoints

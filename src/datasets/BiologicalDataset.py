@@ -15,11 +15,11 @@ class BiologicalDataset(Dataset):
             self.y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_test_int.npy'))
 
         self.X = np.transpose(self.X, (0, 3, 1, 2))       # channel first
-        self.X = self.X.astype(np.float32)
-        self.y = self.y.astype(np.float32)
+        self.X = torch.as_tensor(self.X, dtype=torch.float32)
+        self.y = torch.as_tensor(self.y, dtype=torch.int64)
 
     def __getitem__(self, item):
-        return torch.as_tensor(self.X[item]), torch.as_tensor(self.y[item])
+        return self.X[item], self.y[item]
 
     def __len__(self):
         return len(self.y)

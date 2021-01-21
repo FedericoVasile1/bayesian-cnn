@@ -8,6 +8,8 @@ import json
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), 'lib', 'PyTorchBayesianCNN'))
 from src.utils.uncertainty import compute_uncertainties
 from src.utils.visualize import plot_histogram, plot_confusion_matrix, save_fig_to_tensorboard
 from src.utils.pipeline import set_seed, load_dataset, load_model

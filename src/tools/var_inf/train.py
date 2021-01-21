@@ -9,6 +9,7 @@ import torch.nn.functional as F
 from torch.utils.tensorboard import SummaryWriter
 
 sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), 'lib', 'PyTorchBayesianCNN'))
 from src.utils.pipeline import set_seed, load_dataset, load_model
 from lib.PyTorchBayesianCNN import metrics, utils
 
