@@ -7,11 +7,12 @@ import torch
 class ELBO(nn.Module):
     def __init__(self, train_size):
         super(ELBO, self).__init__()
-        self.train_size = train_size
+        #self.train_size = train_size
 
     def forward(self, input, target, kl, beta):
         assert not target.requires_grad
-        return F.nll_loss(input, target, reduction='mean') * self.train_size + beta * kl
+        #return F.nll_loss(input, target, reduction='mean') * self.train_size + beta * kl
+        return F.nll_loss(input, target, reduction='mean') + beta * kl
 
 
 # def lr_linear(epoch_num, decay_start, total_epochs, start_value):

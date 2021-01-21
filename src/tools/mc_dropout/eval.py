@@ -164,6 +164,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    if args.model != 'MCDROP3CONV3FC':
+        raise ValueError('Wrong --model argument. This evaluation pipeline supports only MCDROP3CONV3FC model')
+
     with open(args.data_info, 'r') as f:
         data_info = json.load(f)[args.dataset]
     args.class_index = data_info['class_index']

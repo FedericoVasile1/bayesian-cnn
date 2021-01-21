@@ -17,8 +17,8 @@ def main(args):
     # settings
     prior_mu = args.prior_mu
     prior_sigma = args.prior_sigma
-    posterior_mu_initial = (int(args.posterior_mu_initial.split(',')[0]), int(args.posterior_mu_initial.split(',')[1]))
-    posterior_rho_initial = (int(args.posterior_rho_initial.split(',')[0]), int(args.posterior_rho_initial.split(',')[1]))
+    posterior_mu_initial = (float(args.posterior_mu_initial.split(',')[0]), float(args.posterior_mu_initial.split(',')[1]))
+    posterior_rho_initial = (float(args.posterior_rho_initial.split(',')[0]), float(args.posterior_rho_initial.split(',')[1]))
     priors = {'prior_mu': prior_mu,
               'prior_sigma': prior_sigma,
               'posterior_mu_initial': posterior_mu_initial,
@@ -43,8 +43,7 @@ def main(args):
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=6, verbose=True)
     # TODO: better check the loss provided, is the implementation correct?
-    criterion_train = metrics.ELBO(len(dataloader['train'].dataset)).to(device)
-    criterion_val = metrics.ELBO(len(dataloader['val'].dataset)).to(device)
+    criterion = metrics.ELBO(None).to(device)
     model.train(True)
 
     best_val_accuracy = -1
@@ -60,7 +59,6 @@ def main(args):
         for phase in phases:
             training = True if phase=='train' else False
             ens = args.train_ens if training else args.valid_ens
-            criterion = criterion_train if training else criterion_val
             with torch.set_grad_enabled(training):
                 for batch_idx, (images, targets) in enumerate(dataloader[phase], start=1):
                     batch_size = images.shape[0]
@@ -82,7 +80,7 @@ def main(args):
                     kl /= ens
                     log_outputs = utils.logmeanexp(outputs, dim=2)
 
-                    beta = metrics.get_beta(batch_idx-1, len(dataloader[phase], args.beta_type, epoch, args.epochs))
+                    beta = metrics.get_beta(batch_idx-1, len(dataloader[phase]), args.beta_type, epoch, args.epochs)
                     loss = criterion(log_outputs, targets, kl, beta)
 
                     if training:
@@ -175,6 +173,9 @@ if __name__ == '__main__':
     parser.add_argument('--data_info',  default='data/data_info.json' ,type=str)
 
     args = parser.parse_args()
+
+    if args.model != 'VARINF3CONV3FC':
+        raise ValueError('Wrong --model argument. This training pipeline supports only VARINF3CONV3FC model')
 
     with open(args.data_info, 'r') as f:
         data_info = json.load(f)[args.dataset]
