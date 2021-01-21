@@ -4,16 +4,16 @@ from lib.PyTorchBayesianCNN.layers import BBB_Linear, BBB_Conv2d
 from lib.PyTorchBayesianCNN.layers import BBB_LRT_Linear, BBB_LRT_Conv2d
 from lib.PyTorchBayesianCNN.layers import FlattenLayer, ModuleWrapper
 
-class GlobalAvgPool(nn.Module):
+class GlobalAvgPool(ModuleWrapper):
     def __init__(self):
         super(GlobalAvgPool, self).__init__()
 
     def forward(self, x):
         return x.mean(dim=(2, 3))
 
-class BBB3Conv3FC(ModuleWrapper):
+class V3Conv3FC(ModuleWrapper):
     def __init__(self, outputs, inputs, priors, layer_type='lrt', activation_type='softplus'):
-        super(BBB3Conv3FC, self).__init__()
+        super(V3Conv3FC, self).__init__()
 
         self.num_classes = outputs
         self.layer_type = layer_type
@@ -50,7 +50,7 @@ class BBB3Conv3FC(ModuleWrapper):
         # self.pool3 = nn.MaxPool2d(kernel_size=3, stride=2)
         self.pool3 = GlobalAvgPool()
 
-        self.flatten = FlattenLayer(128)
+        #self.flatten = FlattenLayer(128)
         self.fc1 = BBBLinear(128, 256, bias=True, priors=self.priors)
         self.act4 = self.act()
 

@@ -7,9 +7,9 @@ def conv_init(m):
         nn.init.normal_(m.weight, mean=0, std=1)
         nn.init.constant(m.bias, 0)
 
-class MCDropout3Conv3FC(nn.Module):
+class M3Conv3FC(nn.Module):
     def __init__(self, num_classes, in_channels, drop=0.5, activation_function='relu'):
-        super(MCDropout3Conv3FC, self).__init__()
+        super(M3Conv3FC, self).__init__()
 
         if activation_function == 'relu':
             self.act = nn.ReLU
