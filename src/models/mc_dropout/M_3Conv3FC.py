@@ -1,5 +1,7 @@
 import torch.nn as nn
 
+from src.utils.model import GlobalAvgPool
+
 def conv_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -33,7 +35,7 @@ class M3Conv3FC(nn.Module):
             nn.Dropout(drop),
             nn.Conv2d(64, 128, 5, stride=1, padding=1),
             self.act(),
-            #nn.MaxPool2d(kernel_size=3, stride=2),      # replace this with global avg pool
+            GlobalAvgPool(),
         )
         self.classifier = nn.Sequential(
             nn.Dropout(drop),
@@ -48,6 +50,5 @@ class M3Conv3FC(nn.Module):
 
     def forward(self, x):
         x = self.features(x)
-        x = x.mean(dim=(2, 3))  # global average pooling
         x = self.classifier(x)
         return x

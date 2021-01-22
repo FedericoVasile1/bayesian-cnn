@@ -17,10 +17,11 @@ def main(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize'.\
         format(args.model, args.dataset, args.dropout, args.activation_function, args.batch_size)
+    if args.suppress_epoch_print:
+        print(base_name)
+
     writer = SummaryWriter(log_dir='results/mcdrop/'+base_name)
     command = 'python ' + ' '.join(sys.argv)
-    if args.suppress_epoch_print:
-        print(command)
     f = open(writer.log_dir + '/log.txt', 'w+')
     f.write(command)
     f.close()

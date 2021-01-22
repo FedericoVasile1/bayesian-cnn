@@ -6,8 +6,9 @@ import torch
 from torchvision import transforms, datasets
 
 from src.datasets.BiologicalDataset import BiologicalDataset
-from src.models.mc_dropout import M_3Conv3FC
-from src.models.var_inf import V_3Conv3FC
+from src.models.mc_dropout import M_3Conv3FC, M_AlexNet
+from src.models.var_inf import V_3Conv3FC, V_AlexNet
+
 
 def set_seed(seed):
     random.seed(seed)
@@ -83,7 +84,11 @@ def load_model(model, input_channels, num_classes, activation_function, dropout,
         model = M_3Conv3FC.M3Conv3FC(num_classes, input_channels, dropout, activation_function)
     elif model == 'VARINF3CONV3FC':
         model = V_3Conv3FC.V3Conv3FC(num_classes, input_channels, priors, layer_type, activation_function)
+    elif model == 'MCDROPALEXNET':
+        model = M_AlexNet.MAlexNet(num_classes, input_channels, dropout, activation_function)
+    elif model == 'VARINFALEXNET':
+        model = V_AlexNet.VAlexNet(num_classes, input_channels, priors, layer_type, activation_function)
     else:
         raise Exception('Wrong --model option; ' + model + ' is not supported.'
-                        ' Supported models: [MCDROP3CONV3FC|VARINF3CONV3FC]')
+                        ' Supported models: [MCDROP3CONV3FC|VARINF3CONV3FC|MCDROPALEXNET|VARINFALEXNET]')
     return model

@@ -26,13 +26,15 @@ def main(args):
 
     set_seed(args.seed)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    base_name = 'model-{}-dataset-{}-actfunc-{}-batchsize-{}-pm-{}-ps-{}-pmi-{}-pri-{}-te-{}-ve-{}'.\
+    base_name = 'model-{}-dataset-{}-actfunc-{}-batchsize-{}-pm-{}-ps-{}-pmi-{}-pri-{}-lrt-{}-te-{}-ve-{}'.\
         format(args.model, args.dataset, args.activation_function, args.batch_size,
-               prior_mu, prior_sigma, posterior_mu_initial, posterior_rho_initial, args.train_ens, args.valid_ens)
+               prior_mu, prior_sigma, posterior_mu_initial, posterior_rho_initial,
+               args.layer_type, args.train_ens, args.valid_ens)
+    if args.suppress_epoch_print:
+        print(base_name)
+
     writer = SummaryWriter(log_dir='results/varinf/'+base_name)
     command = 'python ' + ' '.join(sys.argv)
-    if args.suppress_epoch_print:
-        print(command)
     f = open(writer.log_dir + '/log.txt', 'w+')
     f.write(command)
     f.close()
