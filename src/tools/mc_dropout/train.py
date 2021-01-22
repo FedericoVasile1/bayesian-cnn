@@ -120,7 +120,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dataset', default='MNIST', type=str)
-    parser.add_argument('--model', default='MCDROP3CONV3FC', type=str)
+    parser.add_argument('--model', default='MCDROPALEXNET', type=str)
     parser.add_argument('--dropout', default=0.5, type=float)
     parser.add_argument('--activation_function', default='softplus', type=str)
     parser.add_argument('--batch_size', default=256, type=int)
@@ -137,8 +137,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.model != 'MCDROP3CONV3FC':
-        raise ValueError('Wrong --model argument. This training pipeline supports only MCDROP3CONV3FC model')
+    if args.model not in ('MCDROP3CONV3FC', 'MCDROPALEXNET'):
+        raise ValueError('Wrong --model argument. '
+                         'This training pipeline supports only [MCDROP3CONV3FC|MCDROPALEXNET] models')
 
     with open(args.data_info, 'r') as f:
         data_info = json.load(f)[args.dataset]

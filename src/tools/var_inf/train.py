@@ -152,7 +152,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dataset', default='MNIST', type=str)
-    parser.add_argument('--model', default='VARINF3CONV3FC', type=str)
+    parser.add_argument('--model', default='VARINFALEXNET', type=str)
     parser.add_argument('--activation_function', default='softplus', type=str)
     parser.add_argument('--batch_size', default=256, type=int)
 
@@ -179,8 +179,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.model != 'VARINF3CONV3FC':
-        raise ValueError('Wrong --model argument. This training pipeline supports only VARINF3CONV3FC model')
+    if args.model not in ('VARINF3CONV3FC', 'VARINFALEXNET'):
+        raise ValueError('Wrong --model argument. '
+                         'This training pipeline supports only [VARINF3CONV3FC|VARINFALEXNET] model')
 
     with open(args.data_info, 'r') as f:
         data_info = json.load(f)[args.dataset]
