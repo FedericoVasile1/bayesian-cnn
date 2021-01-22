@@ -15,7 +15,7 @@ from src.utils.pipeline import set_seed, load_dataset, load_model
 def main(args):
     set_seed(args.seed)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize'.\
+    base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize-{}'.\
         format(args.model, args.dataset, args.dropout, args.activation_function, args.batch_size)
     if args.suppress_epoch_print:
         print(base_name)
