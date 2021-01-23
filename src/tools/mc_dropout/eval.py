@@ -147,7 +147,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--dataset', default='MNIST', type=str)
-    parser.add_argument('--model', default='MCDROPOUT3CONV3FC', type=str)
+    parser.add_argument('--model', default='MCDROPALEXNET', type=str)
     parser.add_argument('--dropout', default=0.5, type=float)
     parser.add_argument('--activation_function', default='softplus', type=str)
     parser.add_argument('--batch_size', default=256, type=int)
