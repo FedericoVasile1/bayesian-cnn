@@ -17,18 +17,15 @@ from src.utils.pipeline import set_seed, load_dataset, load_model
 def main(args):
     set_seed(args.seed)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize'.format(args.model,
-                                                                             args.dataset,
-                                                                             args.dropout,
-                                                                             args.activation_function,
-                                                                             args.batch_size)
-    checkpoint_path = os.path.join(os.getcwd(), 'results', base_name, 'best_model.pth')
+    base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize-{}'.\
+        format(args.model, args.dataset, args.dropout, args.activation_function, args.batch_size)
+    checkpoint_path = os.path.join(os.getcwd(), 'results', 'mcdrop', base_name, 'best_model.pth')
     if os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
     else:
         raise(RuntimeError('Cannot find the checkpoint {}'.format(checkpoint_path)))
 
-    eval_dir = os.path.join(os.getcwd(), 'results', base_name, 'eval_K='+str(args.K))
+    eval_dir = os.path.join(os.getcwd(), 'results', 'mcdrop', base_name, 'eval_K='+str(args.K))
     if os.path.isdir(eval_dir):
         shutil.rmtree(eval_dir)
     os.mkdir(eval_dir)
