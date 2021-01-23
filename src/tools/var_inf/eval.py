@@ -166,8 +166,9 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.model != 'VARINF3CONV3FC':
-        raise ValueError('Wrong --model argument. This evaluation pipeline supports only VARINF3CONV3FC model')
+    if args.model not in ('VARINF3CONV3FC', 'VARINFALEXNET'):
+        raise ValueError('Wrong --model argument. '
+                         'This training pipeline supports only [VARINF3CONV3FC|VARINFALEXNET] model')
 
     with open(args.data_info, 'r') as f:
         data_info = json.load(f)[args.dataset]
