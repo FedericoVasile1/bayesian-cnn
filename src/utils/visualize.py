@@ -2,12 +2,12 @@ import torch
 from torchvision import datasets
 from torch.utils.tensorboard import SummaryWriter
 
-from PIL import Image
 import cv2
 
 import io
 import os
 import numpy as np
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from sklearn.metrics import confusion_matrix
 import itertools
@@ -101,12 +101,45 @@ def plot_confusion_matrix(y_true,
         plt.show()
     return figure
 
-def plot_histogram(data, figsize=(8, 5), color='b', title=None, show_image=False):
+def plot_histogram_classes(data,
+                           target_all,
+                           class_index,
+                           figsize=(8, 5),
+                           title=None,
+                           show_image=False,
+                           xlabel='F(std)',
+                           ylabel='# of images'):
+    # hard-coded
+    LEGEND = class_index
+    STACKED = True
+    COLORS = cm.rainbow(np.linspace(0, 1, len(class_index)))
+
+    # convert data from a tensor containing all values to a list
+    #  in which the element at position i is a tensor containing all
+    #  values of class i
+    new_data = []
+    for idx, cls in enumerate(class_index):
+        cls_values = data[target_all == idx]    # cls_values is a torch tensor
+        new_data.append(cls_values)
+
+    plot_histogram(new_data, figsize, COLORS, title, show_image, xlabel, ylabel, legend=LEGEND, stacked=STACKED)
+
+def plot_histogram(data,
+                   figsize=(8, 5),
+                   color='b',
+                   title=None,
+                   show_image=False,
+                   xlabel='F(std)',
+                   ylabel='# of images',
+                   legend=None,
+                   stacked=False):
     figure = plt.figure(figsize=figsize)
-    plt.hist(data, bins=25, color=color, linewidth=1.2, edgecolor='black')
+    plt.hist(data, bins=25, color=color, linewidth=1.2, edgecolor='black', stacked=stacked)
     plt.title(title, color='black')
-    plt.xlabel('F(std)')
-    plt.ylabel('# of images')
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    if legend is not None:
+        plt.legend(legend)
     if show_image:
         plt.show()
     return figure

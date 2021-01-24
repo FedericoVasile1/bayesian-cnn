@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 sys.path.append(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), 'lib', 'PyTorchBayesianCNN'))
 from src.utils.uncertainty import compute_uncertainties
-from src.utils.visualize import plot_histogram, plot_confusion_matrix, save_fig_to_tensorboard
+from src.utils.visualize import plot_histogram, plot_histogram_classes, plot_confusion_matrix, save_fig_to_tensorboard
 from src.utils.pipeline import set_seed, load_dataset, load_model
 
 def main(args):
@@ -37,7 +37,7 @@ def main(args):
 
     dataloader = load_dataset(args.dataset, None, args.batch_size, mode='test')
 
-    model = load_model(args.model, args.input_channels, args.num_classes, args.dropout)
+    model = load_model(args.model, args.input_channels, args.num_classes, args.activation_function, args.dropout, None, None)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.train(True)           # always true since we are using variational dropout
 
@@ -75,14 +75,14 @@ def main(args):
 
             scores_all = torch.cat(scores_all).cpu().detach().numpy()
             targets_all = torch.cat(targets_all).cpu().detach().numpy()
-            title = 'Confusion matrix - {}/K=1'.format(args.dataset)
+            title = '[{}|K=1]/ConfusionMatrix'.format(args.dataset)
             fig = plot_confusion_matrix(targets_all,
                                         scores_all,
                                         args.class_index,
                                         title)
             save_fig_to_tensorboard(fig, writer, title)
 
-        log = 'Inference on test set computing uncertainties with K={} ...'.format(args.K)
+        log = 'Inference on test set by computing uncertainties with K={} ...'.format(args.K)
         print(log)
         f = open(writer.log_dir + '/log.txt', 'a+')
         f.write(log)
@@ -107,6 +107,7 @@ def main(args):
 
         log = '... Accuracy on test set: {:.1f}%  |Running time: {:.1f}s'.\
             format(accuracy / len(dataloader['test'].dataset) * 100, end - start)
+        print(log)
         f = open(writer.log_dir + '/log.txt', 'a+')
         f.write(log)
         f.close()
@@ -115,28 +116,43 @@ def main(args):
         predictions_uncertainty_all = torch.cat(predictions_uncertainty_all).cpu().detach().numpy()
         predicted_class_variance_all = torch.cat(predicted_class_variance_all).cpu().detach().numpy()
 
-        title = 'Confusion matrix - {}/K={}'.format(args.dataset, args.K)
+        title = '[{}|K={}/ConfusionMatrix]'.format(args.dataset, args.K)
         fig = plot_confusion_matrix(targets_all,
                                     predictions_uncertainty_all,
                                     args.class_index,
                                     title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        title = '{} test/All predictions'.format(args.dataset)
+        title = '[{}|K={}]/AllPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all, color='b', title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        title = '{} test/Correct predictions'.format(args.dataset)
+        title = '[{}|K={}]/CorrectPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all],
                              color='green',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        title = '{} test/Wrong predictions'.format(args.dataset)
+        title = '[{}|K={}]/WrongPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all],
                              color='red',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
+
+        title = '[{}|K={}]/ClassesAllPredictions'.format(args.dataset, args.K)
+        fig = plot_histogram_classes(predicted_class_variance_all, targets_all, args.class_index, title=title)
+        save_fig_to_tensorboard(fig, writer, title)
+
+        title = '[{}|K={}]/ClassesCorrectPredictions'.format(args.dataset, args.K)
+        mask = predictions_uncertainty_all == targets_all
+        fig = plot_histogram_classes(predicted_class_variance_all[mask], targets_all[mask], args.class_index, title=title)
+        save_fig_to_tensorboard(fig, writer, title)
+
+        title = '[{}|K={}]/ClassesWrongPredictions'.format(args.dataset, args.K)
+        mask = predictions_uncertainty_all != targets_all
+        fig = plot_histogram_classes(predicted_class_variance_all[mask], targets_all[mask], args.class_index, title=title)
+        save_fig_to_tensorboard(fig, writer, title)
+
 
 if __name__ == '__main__':
     base_dir = os.getcwd()
@@ -149,7 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='MNIST', type=str)
     parser.add_argument('--model', default='MCDROPALEXNET', type=str)
     parser.add_argument('--dropout', default=0.5, type=float)
-    parser.add_argument('--activation_function', default='softplus', type=str)
+    parser.add_argument('--activation_function', default='relu', type=str)
     parser.add_argument('--batch_size', default=256, type=int)
 
     parser.add_argument('--K', default=100, type=int)

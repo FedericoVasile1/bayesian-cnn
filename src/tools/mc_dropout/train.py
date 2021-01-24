@@ -122,10 +122,10 @@ if __name__ == '__main__':
     parser.add_argument('--dataset', default='MNIST', type=str)
     parser.add_argument('--model', default='MCDROPALEXNET', type=str)
     parser.add_argument('--dropout', default=0.5, type=float)
-    parser.add_argument('--activation_function', default='softplus', type=str)
+    parser.add_argument('--activation_function', default='relu', type=str)
     parser.add_argument('--batch_size', default=256, type=int)
 
-    parser.add_argument('--epochs', default=200, type=int)
+    parser.add_argument('--epochs', default=100, type=int)
     parser.add_argument('--lr', default=0.001, type=float)
     parser.add_argument('--val_split', default=0.2, type=float)
 

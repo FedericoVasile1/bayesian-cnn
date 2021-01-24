@@ -11,24 +11,33 @@ from torch.utils.tensorboard import SummaryWriter
 sys.path.append(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), 'lib', 'PyTorchBayesianCNN'))
 from src.utils.uncertainty import compute_uncertainties
-from src.utils.visualize import plot_histogram, plot_confusion_matrix, save_fig_to_tensorboard
+from src.utils.visualize import plot_histogram, plot_histogram_classes, plot_confusion_matrix, save_fig_to_tensorboard
 from src.utils.pipeline import set_seed, load_dataset, load_model
 
 def main(args):
+    # settings
+    prior_mu = args.prior_mu
+    prior_sigma = args.prior_sigma
+    posterior_mu_initial = (int(args.posterior_mu_initial.split(',')[0]), float(args.posterior_mu_initial.split(',')[1]))
+    posterior_rho_initial = (int(args.posterior_rho_initial.split(',')[0]), float(args.posterior_rho_initial.split(',')[1]))
+    priors = {'prior_mu': prior_mu,
+              'prior_sigma': prior_sigma,
+              'posterior_mu_initial': posterior_mu_initial,
+              'posterior_rho_initial': posterior_rho_initial}
+
     set_seed(args.seed)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize'.format(args.model,
-                                                                             args.dataset,
-                                                                             args.dropout,
-                                                                             args.activation_function,
-                                                                             args.batch_size)
-    checkpoint_path = os.path.join(os.getcwd(), 'results', base_name, 'best_model.pth')
+    base_name = 'model-{}-dataset-{}-actfunc-{}-batchsize-{}-pm-{}-ps-{}-pmi-{}-pri-{}-lrt-{}-te-{}-ve-{}'.\
+        format(args.model, args.dataset, args.activation_function, args.batch_size,
+               prior_mu, prior_sigma, posterior_mu_initial, posterior_rho_initial,
+               args.layer_type, args.train_ens, args.valid_ens)
+    checkpoint_path = os.path.join(os.getcwd(), 'results', 'var_inf', base_name, 'best_model.pth')
     if os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
     else:
         raise(RuntimeError('Cannot find the checkpoint {}'.format(checkpoint_path)))
 
-    eval_dir = os.path.join(os.getcwd(), 'results', base_name, 'eval_K='+str(args.K))
+    eval_dir = os.path.join(os.getcwd(), 'results', 'var_inf', base_name, 'eval_K='+str(args.K))
     if os.path.isdir(eval_dir):
         shutil.rmtree(eval_dir)
     os.mkdir(eval_dir)
@@ -40,7 +49,7 @@ def main(args):
 
     dataloader = load_dataset(args.dataset, None, args.batch_size, num_workers=args.num_workers, mode='test')
 
-    model = load_model(args.model, args.input_channels, args.num_classes, args.dropout)
+    model = load_model(args.model, args.input_channels, args.num_classes, args.activation_function, None, priors, args.layer_type)
     model.load_state_dict(checkpoint['model_state_dict'])
     model.train(True)           # always true since we are using variational dropout
 
@@ -60,8 +69,9 @@ def main(args):
             start = time.time()
             for batch_idx, (images, targets) in enumerate(dataloader['test'], start=1):
                 images = images.to(device)
-                scores = model(images).argmax(dim=1)
+                scores, _ = model(images)
 
+                scores = scores.argmax(dim=1)
                 targets = targets.to(device)
                 accuracy += (scores == targets).sum().item()
 
@@ -78,7 +88,7 @@ def main(args):
 
             scores_all = torch.cat(scores_all).cpu().detach().numpy()
             targets_all = torch.cat(targets_all).cpu().detach().numpy()
-            title = 'Confusion matrix - {}/K=1'.format(args.dataset)
+            title = '[{}|K=1]/ConfusionMatrix'.format(args.dataset)
             fig = plot_confusion_matrix(targets_all,
                                         scores_all,
                                         args.class_index,
@@ -118,28 +128,43 @@ def main(args):
         predictions_uncertainty_all = torch.cat(predictions_uncertainty_all).cpu().detach().numpy()
         predicted_class_variance_all = torch.cat(predicted_class_variance_all).cpu().detach().numpy()
 
-        title = 'Confusion matrix - {}/K={}'.format(args.dataset, args.K)
+        title = '[{}|K={}]/ConfusionMatrix'.format(args.dataset, args.K)
         fig = plot_confusion_matrix(targets_all,
                                     predictions_uncertainty_all,
                                     args.class_index,
                                     title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        title = '{} test/All predictions'.format(args.dataset)
+        title = '[{}|K={}]/AllPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all, color='b', title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        title = '{} test/Correct predictions'.format(args.dataset)
+        title = '[{}|K={}]/CorrectPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all],
                              color='green',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        title = '{} test/Wrong predictions'.format(args.dataset)
+        title = '[{}|K={}]/WrongPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all],
                              color='red',
                              title=title)
         save_fig_to_tensorboard(fig, writer, title)
+
+        title = '[{}|K={}]/ClassesAllPredictions'.format(args.dataset, args.K)
+        fig = plot_histogram_classes(predicted_class_variance_all, targets_all, args.class_index, title=title)
+        save_fig_to_tensorboard(fig, writer, title)
+
+        title = '[{}|K={}]/ClassesCorrectPredictions'.format(args.dataset, args.K)
+        mask = predictions_uncertainty_all == targets_all
+        fig = plot_histogram_classes(predicted_class_variance_all[mask], targets_all[mask], args.class_index, title=title)
+        save_fig_to_tensorboard(fig, writer, title)
+
+        title = '[{}|K={}]/ClassesWrongPredictions'.format(args.dataset, args.K)
+        mask = predictions_uncertainty_all != targets_all
+        fig = plot_histogram_classes(predicted_class_variance_all[mask], targets_all[mask], args.class_index, title=title)
+        save_fig_to_tensorboard(fig, writer, title)
+
 
 if __name__ == '__main__':
     base_dir = os.getcwd()

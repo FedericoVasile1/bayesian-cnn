@@ -44,9 +44,8 @@ def main(args):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
     lr_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, patience=6, verbose=True)
-    # TODO: better check the loss provided, is the implementation correct?
+    # TODO: better check the loss provided
     criterion = metrics.ELBO(len(dataloader['train'].dataset)+len(dataloader['val'].dataset)).to(device)
-    #model.train(True)
 
     best_val_accuracy = -1
     best_epoch = -1
@@ -62,7 +61,7 @@ def main(args):
             training = True if phase=='train' else False
             ens = args.train_ens if training else args.valid_ens
             with torch.set_grad_enabled(training):
-                model.train()
+                model.train(True)   # always true
 
                 for batch_idx, (images, targets) in enumerate(dataloader[phase], start=1):
                     batch_size = images.shape[0]
@@ -166,7 +165,7 @@ if __name__ == '__main__':
     parser.add_argument('--valid_ens', default=1, type=int)
     parser.add_argument('--beta_type', default=0.1, type=float)     # 'Blundell', 'Standard', etc. Use float for const value
 
-    parser.add_argument('--epochs', default=200, type=int)
+    parser.add_argument('--epochs', default=100, type=int)
     parser.add_argument('--lr', default=0.001, type=float)
     parser.add_argument('--val_split', default=0.2, type=float)
     parser.add_argument('--num_workers', default=4, type=int)
