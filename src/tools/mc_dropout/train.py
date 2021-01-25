@@ -91,10 +91,10 @@ def main(args):
         f.close()
 
         writer.add_scalars('Loss_epoch/train_val',
-                           {phase: loss_epoch[phase] / len(dataloader[phase].dataset) for phase in args.phases},
+                           {phase: loss_epoch[phase] / len(dataloader[phase].dataset) for phase in phases},
                            epoch)
         writer.add_scalars('Accuracy_epoch/train_val',
-                           {phase: accuracy_epoch[phase] / len(dataloader[phase].dataset) * 100 for phase in args.phases},
+                           {phase: accuracy_epoch[phase] / len(dataloader[phase].dataset) * 100 for phase in phases},
                            epoch)
 
         if best_val_accuracy < (accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100):
