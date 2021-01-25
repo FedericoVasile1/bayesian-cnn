@@ -33,7 +33,7 @@ def main(args):
     if args.suppress_epoch_print:
         print(base_name)
 
-    writer = SummaryWriter(log_dir='results/varinf/'+base_name)
+    writer = SummaryWriter(log_dir='results/var_inf/'+base_name)
     command = 'python ' + ' '.join(sys.argv)
     f = open(writer.log_dir + '/log.txt', 'w+')
     f.write(command)

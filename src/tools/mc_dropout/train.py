@@ -20,7 +20,7 @@ def main(args):
     if args.suppress_epoch_print:
         print(base_name)
 
-    writer = SummaryWriter(log_dir='results/mcdrop/'+base_name)
+    writer = SummaryWriter(log_dir='results/mc_dropout/'+base_name)
     command = 'python ' + ' '.join(sys.argv)
     f = open(writer.log_dir + '/log.txt', 'w+')
     f.write(command)
