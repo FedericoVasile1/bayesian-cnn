@@ -97,7 +97,6 @@ def main(args):
                     if args.verbose:
                         print('[{:5}] Epoch: {}/{}  Iteration: {}  Loss: {:.4f}  KL_div: {:.4f}'.
                               format(phase, epoch, args.epochs, batch_idx, loss.item(), kl))
-                    writer.add_scalar('Loss_iter/'+phase, loss.item(), batch_idx)
 
         lr_sched.step(loss_epoch['val'] / len(dataloader['val'].dataset))
 
@@ -122,10 +121,15 @@ def main(args):
         f.write(log)
         f.close()
 
-        writer.add_scalar('Loss_epoch/train', loss_epoch['train'] / len(dataloader['train'].dataset), epoch)
-        writer.add_scalar('Loss_epoch/val', loss_epoch['val'] / len(dataloader['val'].dataset), epoch)
-        writer.add_scalar('Accuracy_epoch/train', accuracy_epoch['train'] / len(dataloader['train'].dataset) * 100, epoch)
-        writer.add_scalar('Accuracy_epoch/val', accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100, epoch)
+        writer.add_scalars('Loss_epoch/train_val',
+                           {phase: loss_epoch[phase] / len(dataloader[phase].dataset) for phase in args.phases},
+                           epoch)
+        writer.add_scalars('Accuracy_epoch/train_val',
+                           {phase: accuracy_epoch[phase] / len(dataloader[phase].dataset) * 100 for phase in args.phases},
+                           epoch)
+        writer.add_scalars('KLdiv_epoch/train_val',
+                           {phase: kl_epoch[phase] / len(dataloader[phase]) for phase in args.phases},
+                           epoch)
 
         if best_val_accuracy < (accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100):
             best_val_accuracy  = accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100
