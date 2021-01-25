@@ -25,7 +25,7 @@ def main(args):
     else:
         raise(RuntimeError('Cannot find the checkpoint {}'.format(checkpoint_path)))
 
-    eval_dir = os.path.join(os.getcwd(), 'results', 'mcdrop', base_name, 'eval_K='+str(args.K))
+    eval_dir = os.path.join(os.getcwd(), 'results', 'mc_dropout', base_name, 'eval_K='+str(args.K))
     if os.path.isdir(eval_dir):
         shutil.rmtree(eval_dir)
     os.mkdir(eval_dir)
