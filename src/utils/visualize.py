@@ -184,8 +184,8 @@ def save_fig_to_tensorboard(fig, writer, title):
 
 def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_image=False):
     if dataset_name == 'CRC':
-        y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_train.npy' if train else 'Y_test.npy'))
-        y = torch.from_numpy(y)
+        y = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_train_int.npy' if train else 'real_classes_test_int.npy'))
+        y = torch.as_tensor(y, dtype=torch.int64)
     elif dataset_name == 'MNIST':
         dataset = datasets.MNIST(root=os.path.join(os.getcwd(), 'data'), train=train, download=True)
         y = dataset.targets
@@ -214,8 +214,7 @@ def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_im
         new_seq_colors[idx_class] = colors[idx]
 
     plt.bar(classes_and_counts[0], classes_and_counts[1], color=new_seq_colors)
-    #plt.xticks(classes_and_counts[0])
-    plt.xticks(class_index, rotation=45)
+    plt.xticks(classes_and_counts[0], class_index, rotation=45)
     plt.xlabel('Class')
     plt.ylabel('Frequency')
     if show_image:
@@ -223,9 +222,15 @@ def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_im
     return figure
 
 if __name__ == '__main__':
+    base_dir = os.getcwd()
+    base_dir = base_dir.split('/')[-1]
+    if base_dir != 'Project8':
+        raise Exception('Wrong base dir, this file must be run from Project8/ directory.')
+
+
     # WARNING: this module is not intended to be runnable, so this main is only for testing purposes
     X_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_train.npy'))
-    Y_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'Y_train.npy'))
+    Y_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_train_int.npy'))
     mean_image = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'mean_x_train.npy'))
 
     X_train *= 255.
@@ -235,9 +240,9 @@ if __name__ == '__main__':
     X_train = X_train.astype('uint8')
 
     if True:
-        dataset = 'MNIST'
+        dataset = 'CRC'
         writer = SummaryWriter()
-        a = stats_classes(dataset)
+        a = stats_classes(dataset, ["AC", "AD", "H", "blood", "fat", "glass", "stroma"])
         b = plot_to_image(a)
         writer.add_image(dataset+'_classes', np.transpose(b, (2, 0, 1)), 0)
         writer.close()
