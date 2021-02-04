@@ -30,7 +30,7 @@ def main(args):
     base_name = 'model-{}-dataset-{}-actfunc-{}-batchsize-{}-pm-{}-ps-{}-pmi-{}-pri-{}-lrt-{}-te-{}-ve-{}'.\
         format(args.model, args.dataset, args.activation_function, args.batch_size,
                prior_mu, prior_sigma, posterior_mu_initial, posterior_rho_initial,
-               args.layer_type, args.train_en\s, args.valid_ens)
+               args.layer_type, args.train_ens, args.valid_ens)
     checkpoint_path = os.path.join(os.getcwd(), 'results', 'var_inf', base_name, 'best_model.pth')
     if os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
