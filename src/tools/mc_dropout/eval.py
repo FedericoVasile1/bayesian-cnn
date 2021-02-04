@@ -19,7 +19,7 @@ def main(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     base_name = 'model-{}-dataset-{}-dropout-{}-actfunc-{}-batchsize-{}'.\
         format(args.model, args.dataset, args.dropout, args.activation_function, args.batch_size)
-    checkpoint_path = os.path.join(os.getcwd(), 'results', 'mcdrop', base_name, 'best_model.pth')
+    checkpoint_path = os.path.join(os.getcwd(), 'results', 'mc_dropout', base_name, 'best_model.pth')
     if os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
     else:

@@ -24,7 +24,6 @@ def compute_uncertainties(net, X, K=100):
     # p_hat.shape == (K, n_samples, n_classes)
 
     # Mean over MC(MonteCarlo) samples
-    ## Per ogni campione per ogni classe calcolo la media lungo le K iterazioni
     # For each sample for each class compute the mean along the K predictions
     mean_probs_over_draw = torch.mean(p_hat, dim=0)
     # mean_probs_over_draw.shape == (n_samples, n_classes)
