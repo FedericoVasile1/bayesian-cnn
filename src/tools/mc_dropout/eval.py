@@ -35,7 +35,7 @@ def main(args):
     f.write(command)
     f.close()
 
-    dataloader = load_dataset(args.dataset, None, args.batch_size, mode='test')
+    dataloader = load_dataset(args.dataset, None, args.batch_size, num_workers=args.num_workers, mode='test')
 
     model = load_model(args.model, args.input_channels, args.num_classes, args.activation_function, args.dropout, None, None)
     model.load_state_dict(checkpoint['model_state_dict'])
@@ -170,6 +170,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--K', default=100, type=int)
     parser.add_argument('--skip_K1', default=False, action='store_true')
+
+    parser.add_argument('--num_workers', default=4, type=int)
 
     parser.add_argument('--seed', default=25, type=int)
 
