@@ -30,7 +30,7 @@ def main(args):
     base_name = 'model-{}-dataset-{}-actfunc-{}-batchsize-{}-pm-{}-ps-{}-pmi-{}-pri-{}-lrt-{}-te-{}-ve-{}'.\
         format(args.model, args.dataset, args.activation_function, args.batch_size,
                prior_mu, prior_sigma, posterior_mu_initial, posterior_rho_initial,
-               args.layer_type, args.train_ens, args.valid_ens)
+               args.layer_type, args.train_en\s, args.valid_ens)
     checkpoint_path = os.path.join(os.getcwd(), 'results', 'var_inf', base_name, 'best_model.pth')
     if os.path.isfile(checkpoint_path):
         checkpoint = torch.load(checkpoint_path)
@@ -184,6 +184,9 @@ if __name__ == '__main__':
     parser.add_argument('--prior_sigma', default=0.1, type=float)
     parser.add_argument('--posterior_mu_initial', default='0,0.1', type=str)    # (mean, std) normal_
     parser.add_argument('--posterior_rho_initial', default='-5,0.1', type=str)  # (mean, std) normal_
+
+    parser.add_argument('--train_ens', default=1, type=int)     # the number of samples
+    parser.add_argument('--valid_ens', default=1, type=int)
 
     parser.add_argument('--K', default=100, type=int)
     parser.add_argument('--skip_K1', default=False, action='store_true')
