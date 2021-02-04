@@ -36,7 +36,7 @@ def main(args):
     writer = SummaryWriter(log_dir='results/var_inf/'+base_name)
     command = 'python ' + ' '.join(sys.argv)
     f = open(writer.log_dir + '/log.txt', 'w+')
-    f.write(command)
+    f.write(command + '\n')
     f.close()
 
     dataloader = load_dataset(args.dataset, args.val_split, args.batch_size, num_workers=args.num_workers, mode='train')
@@ -118,7 +118,7 @@ def main(args):
         if not args.suppress_epoch_print:
             print(log)
         f = open(writer.log_dir + '/log.txt', 'a+')
-        f.write(log)
+        f.write(log + '\n')
         f.close()
 
         writer.add_scalars('Loss_epoch/train_val',
@@ -143,7 +143,7 @@ def main(args):
     log = '--- Best validation accuracy is {:.1f}% obtained at epoch {} ---\n'.format(best_val_accuracy, best_epoch)
     print(log)
     f = open(writer.log_dir + '/log.txt', 'a+')
-    f.write(log)
+    f.write(log + '\n')
     f.close()
 
 if __name__ == '__main__':
