@@ -1,6 +1,8 @@
 import torch
 import torch.nn.functional as F
 
+from lib.PyTorchBayesianCNN.layers import ModuleWrapper
+
 def compute_uncertainties(net, X, K=100):
     """
     @param net: Pytorch model representing the bayesian network
@@ -15,7 +17,7 @@ def compute_uncertainties(net, X, K=100):
     p_hat = []
     for k in range(K):
         scores = net(X)
-        scores = scores if isinstance(net, torch.nn.Module) else scores[0]
+        scores = scores[0] if isinstance(net, ModuleWrapper) else scores
         # scores.shape == (n_samples, n_classes)
         scores = F.softmax(scores, dim=1)
         p_hat.append(scores)
@@ -56,7 +58,7 @@ def compute_uncertainties_softmax(net, X):
     @return std_predictions: Pytorch tensor of shape (n_samples, ) containing the std associated to the prediction
     """
     scores = net(X)      # scores.shape == (n_samples, n_classes)
-    scores = scores if isinstance(net, torch.nn.Module) else scores[0]
+    scores = scores[0] if isinstance(net, ModuleWrapper) else scores
     scores = F.softmax(scores, dim=1)
     std_predictions = torch.std(scores, axis=1)
     return std_predictions
