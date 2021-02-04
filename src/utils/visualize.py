@@ -200,6 +200,7 @@ def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_im
     figure = plt.figure(figsize=figsize)
 
     classes_and_counts = torch.unique(y, sorted=True, return_counts=True)
+    print(classes_and_counts)
     idx_classes = classes_and_counts[0].numpy()
     num_classes = len(idx_classes)
     colors = plt.get_cmap('Blues')(np.linspace(0, 1, num_classes))[::-1]
@@ -220,41 +221,3 @@ def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_im
     if show_image:
         plt.show()
     return figure
-
-if __name__ == '__main__':
-    base_dir = os.getcwd()
-    base_dir = base_dir.split('/')[-1]
-    if base_dir != 'Project8':
-        raise Exception('Wrong base dir, this file must be run from Project8/ directory.')
-
-
-    # WARNING: this module is not intended to be runnable, so this main is only for testing purposes
-    X_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'X_train.npy'))
-    Y_train = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'real_classes_train_int.npy'))
-    mean_image = np.load(os.path.join(os.getcwd(), 'data', 'crc_3_noisy', 'mean_x_train.npy'))
-
-    X_train *= 255.
-    X_train[:, :, :, 0] += mean_image[0]
-    X_train[:, :, :, 1] += mean_image[1]
-    X_train[:, :, :, 2] += mean_image[2]
-    X_train = X_train.astype('uint8')
-
-    if True:
-        dataset = 'CRC'
-        writer = SummaryWriter()
-        a = stats_classes(dataset, ["AC", "AD", "H", "blood", "fat", "glass", "stroma"])
-        b = plot_to_image(a)
-        writer.add_image(dataset+'_classes', np.transpose(b, (2, 0, 1)), 0)
-        writer.close()
-
-    if False:
-        plot_random_images(X_train, Y_train, examples=16, fig_suptitle='X_train_samples', figsize=(6, 6))
-        plt.show()
-
-    if False:
-        SAMPLES = 32
-        Y_pred = np.random.randint(0, 3, SAMPLES)
-        idx_samples = np.random.choice(np.arange(len(Y_train)), SAMPLES, replace=False)
-        Y_true = Y_train[idx_samples]
-        plot_confusion_matrix(Y_true, Y_pred)
-        plt.show()
