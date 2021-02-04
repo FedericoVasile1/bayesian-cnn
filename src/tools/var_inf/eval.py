@@ -44,7 +44,7 @@ def main(args):
     writer = SummaryWriter(log_dir=eval_dir)
     command = 'python ' + ' '.join(sys.argv)
     f = open(writer.log_dir + '/log.txt', 'w+')
-    f.write(command)
+    f.write(command + '\n')
     f.close()
 
     dataloader = load_dataset(args.dataset, None, args.batch_size, num_workers=args.num_workers, mode='test')
@@ -60,7 +60,7 @@ def main(args):
             log = 'Inference on test set without computing uncertainties(i.e. K=1) ...'
             print(log)
             f = open(writer.log_dir + '/log.txt', 'a+')
-            f.write(log)
+            f.write(log + '\n')
             f.close()
 
             accuracy = 0
@@ -83,7 +83,7 @@ def main(args):
                 format(accuracy / len(dataloader['test'].dataset) * 100, end - start)
             print(log)
             f = open(writer.log_dir + '/log.txt', 'a+')
-            f.write(log)
+            f.write(log + '\n')
             f.close()
 
             scores_all = torch.cat(scores_all).cpu().detach().numpy()
@@ -98,7 +98,7 @@ def main(args):
         log = 'Inference on test set computing uncertainties with K={} ...'.format(args.K)
         print(log)
         f = open(writer.log_dir + '/log.txt', 'a+')
-        f.write(log)
+        f.write(log + '\n')
         f.close()
 
         predictions_uncertainty_all = []
@@ -120,8 +120,9 @@ def main(args):
 
         log = '... Accuracy on test set: {:.1f}%  |Running time: {:.1f}s'.\
             format(accuracy / len(dataloader['test'].dataset) * 100, end - start)
+        print(log)
         f = open(writer.log_dir + '/log.txt', 'a+')
-        f.write(log)
+        f.write(log + '\n')
         f.close()
 
         targets_all = torch.cat(targets_all).cpu().detach().numpy()
