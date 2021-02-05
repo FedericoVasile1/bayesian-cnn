@@ -90,23 +90,31 @@ def main(args):
 
         predictions_uncertainty_all = []
         predicted_class_variance_all = []
+        predicted_class_variance_al_all = []
+        predicted_class_variance_ep_all = []
         targets_all = []
         accuracy = 0
         start = time.time()
         for batch_idx, (images, targets) in enumerate(dataloader['test'], start=1):
             images = images.to(device)
-            predictions_uncertainty, predicted_class_variance = compute_uncertainties(model, images, K=args.K)
+            predictions_uncertainty, predicted_class_variance, predicted_class_variance_al, predicted_class_variance_ep =\
+                compute_uncertainties(model, images, K=args.K)
 
             targets = targets.to(device)
             accuracy += (predictions_uncertainty == targets).sum().item()
 
             predictions_uncertainty_all.append(predictions_uncertainty)
             predicted_class_variance_all.append(predicted_class_variance)
+            predicted_class_variance_al_all.append(predicted_class_variance_al)
+            predicted_class_variance_ep_all.append(predicted_class_variance_ep)
             targets_all.append(targets)
         end = time.time()
 
-        log = '... Accuracy on test set: {:.1f}%  |Running time: {:.1f}s'.\
-            format(accuracy / len(dataloader['test'].dataset) * 100, end - start)
+        avg_unc = torch.cat(predicted_class_variance_all).sum() / len(dataloader['test'].dataset)
+        al = torch.cat(predicted_class_variance_al_all).sum() / len(dataloader['test'].dataset)
+        ep = torch.cat(predicted_class_variance_ep_all).sum() / len(dataloader['test'].dataset)
+        log = '... Accuracy on test set: {:.1f}%  with average uncertainty={:.3f} (al={:.3f}, ep={:.3f})|Running time: {:.1f}s'.\
+            format(accuracy / len(dataloader['test'].dataset) * 100, avg_unc, al, ep, end - start)
         print(log)
         f = open(writer.log_dir + '/log.txt', 'a+')
         f.write(log + '\n')

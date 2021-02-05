@@ -44,7 +44,12 @@ def compute_uncertainties(net, X, K=100):
                                               zip(predictions_uncertainty, uncertainties_among_labels)])
     # predicted_class_variances.shape == (n_samples, )
 
-    return predictions_uncertainty, predicted_class_variances
+    predicted_class_variances_al = torch.tensor([al[prediction] for prediction, al in
+                                                 zip(predictions_uncertainty, aleatoric)])
+    predicted_class_variances_ep = torch.tensor([ep[prediction] for prediction, ep in
+                                                 zip(predictions_uncertainty, epistemic)])
+
+    return predictions_uncertainty, predicted_class_variances, predicted_class_variances_al, predicted_class_variances_ep
 
 def compute_uncertainties_softmax(net, X):
     """
