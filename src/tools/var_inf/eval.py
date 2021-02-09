@@ -189,7 +189,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=256, type=int)
 
     parser.add_argument('--layer_type', default='lrt', type=str)        # 'bbb' or 'lrt'
-    parser.add_argument('--prior_mu', default=0, type=float)
+    parser.add_argument('--prior_mu', default=0.0, type=float)
     parser.add_argument('--prior_sigma', default=0.1, type=float)
     parser.add_argument('--posterior_mu_initial', default='0,0.1', type=str)    # (mean, std) normal_
     parser.add_argument('--posterior_rho_initial', default='-5,0.1', type=str)  # (mean, std) normal_

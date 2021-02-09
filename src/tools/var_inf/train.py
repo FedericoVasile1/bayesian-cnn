@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import json
+import shutil
 
 import torch
 import torch.nn.functional as F
@@ -33,7 +34,10 @@ def main(args):
     if args.suppress_epoch_print:
         print(base_name)
 
-    writer = SummaryWriter(log_dir='results/var_inf/'+base_name)
+    writer_dir = os.path.join('results', 'var_inf', base_name)
+    if os.path.isdir(writer_dir):
+        shutil.rmtree(writer_dir)
+    writer = SummaryWriter(log_dir=writer_dir)
     command = 'python ' + ' '.join(sys.argv)
     f = open(writer.log_dir + '/log.txt', 'w+')
     f.write(command + '\n')
@@ -69,6 +73,12 @@ def main(args):
                     targets = targets.to(device)
 
                     if training:
+                        writer.add_histogram('conv1.W_mu', model.conv1.W_mu, global_step=epoch)
+                        writer.add_histogram('conv1.W_rho', model.conv1.W_rho, global_step=epoch)
+                        writer.add_histogram('conv1.bias_mu', model.conv1.bias_mu, global_step=epoch)
+                        writer.add_histogram('conv1.bias_rho', model.conv1.bias_rho, global_step=epoch)
+                        writer.close()
+
                         optimizer.zero_grad()
 
                     outputs = torch.zeros(batch_size, args.num_classes, ens).to(device)
@@ -130,6 +140,7 @@ def main(args):
         writer.add_scalars('KLdiv_epoch/train_val',
                            {phase: kl_epoch[phase] / len(dataloader[phase]) for phase in phases},
                            epoch)
+        writer.close()
 
         if best_val_accuracy < (accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100):
             best_val_accuracy  = accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100
@@ -160,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=256, type=int)
 
     parser.add_argument('--layer_type', default='lrt', type=str)        # 'bbb' or 'lrt'
-    parser.add_argument('--prior_mu', default=0, type=float)
+    parser.add_argument('--prior_mu', default=0.0, type=float)
     parser.add_argument('--prior_sigma', default=0.1, type=float)
     parser.add_argument('--posterior_mu_initial', default='0,0.1', type=str)    # (mean, std) normal_
     parser.add_argument('--posterior_rho_initial', default='-5,0.1', type=str)  # (mean, std) normal_

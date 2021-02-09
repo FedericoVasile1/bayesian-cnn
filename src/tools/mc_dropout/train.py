@@ -3,6 +3,7 @@ import time
 import os
 import sys
 import json
+import shutil
 
 import torch
 import torch.nn as nn
@@ -20,7 +21,10 @@ def main(args):
     if args.suppress_epoch_print:
         print(base_name)
 
-    writer = SummaryWriter(log_dir='results/mc_dropout/'+base_name)
+    writer_dir = os.path.join('results', 'mc_dropout', base_name)
+    if os.path.isdir(writer_dir):
+        shutil.rmtree(writer_dir)
+    writer = SummaryWriter(log_dir=writer_dir)
     command = 'python ' + ' '.join(sys.argv)
     f = open(writer.log_dir + '/log.txt', 'w+')
     f.write(command + '\n')
@@ -52,6 +56,10 @@ def main(args):
                     targets = targets.to(device)
 
                     if training:
+                        writer.add_histogram('conv1.weight', model.conv1.weight, global_step=epoch)
+                        writer.add_histogram('conv1.bias', model.conv1.bias, global_step=epoch)
+                        writer.close()
+
                         optimizer.zero_grad()
 
                     scores = model(images)
@@ -96,6 +104,7 @@ def main(args):
         writer.add_scalars('Accuracy_epoch/train_val',
                            {phase: accuracy_epoch[phase] / len(dataloader[phase].dataset) * 100 for phase in phases},
                            epoch)
+        writer.close()
 
         if best_val_accuracy < (accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100):
             best_val_accuracy  = accuracy_epoch['val'] / len(dataloader['val'].dataset) * 100
