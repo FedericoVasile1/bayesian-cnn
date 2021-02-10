@@ -56,8 +56,8 @@ def main(args):
                     targets = targets.to(device)
 
                     if training:
-                        writer.add_histogram('conv1.weight', model.conv1.weight, global_step=epoch)
-                        writer.add_histogram('conv1.bias', model.conv1.bias, global_step=epoch)
+                        writer.add_histogram('conv1.weight', model.features[1].weight, global_step=epoch)
+                        writer.add_histogram('conv1.bias', model.features[1].bias, global_step=epoch)
                         writer.close()
 
                         optimizer.zero_grad()
