@@ -7,6 +7,8 @@ import json
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from sklearn.metrics import classification_report
+import numpy as np
 
 sys.path.append(os.getcwd())
 sys.path.append(os.path.join(os.getcwd(), 'lib', 'PyTorchBayesianCNN'))
@@ -136,6 +138,14 @@ def main(args):
         targets_all = torch.cat(targets_all).cpu().detach().numpy()
         predictions_uncertainty_all = torch.cat(predictions_uncertainty_all).cpu().detach().numpy()
         predicted_class_variance_all = torch.cat(predicted_class_variance_all).cpu().detach().numpy()
+
+        clas_rep = classification_report(targets_all,
+                                         predictions_uncertainty_all,
+                                         np.arange(len(args.class_index)).tolist(),
+                                         args.class_index)
+        f = open(writer.log_dir + '/log.txt', 'a+')
+        f.write(clas_rep + '\n')
+        f.close()
 
         title = '[{}|K={}]/ConfusionMatrix'.format(args.dataset, args.K)
         fig = plot_confusion_matrix(targets_all,
