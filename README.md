@@ -11,13 +11,13 @@ The project is organised as follows:
 
     ├── data/                           {contains the datasets samples}
     │   ├── ...
-    │   ├── data_info.json              {contains general info about data, including train/val/test split}
+    │   ├── data_info.json              {contains general info about datasets}
     ├── lib/                            {contains external libraries/repositories}
     |   ├── ...
     ├── src/
     |   ├── datasets/                   {contains PyTorch Dataset modules to load data}
     |   |   ├── *.py
-    |   ├── models/                     {contains the Pytorch Models}
+    |   ├── models/                     {contains the PyTorch Models}
     |   |   ├── mc_dropout/
     |   |   |   ├── *.py
     |   |   ├── var_inf/
@@ -139,7 +139,7 @@ Regarding the network with Variational Inference, the implementation provided by
   * [`report`]()
   * [`presentation`]()
 
-## Acknowledgement
+## Acknowledgements
   * [`Shridhar et al., 2019, A Comprehensive guide to Bayesian Convolutional Neural Network with Variational Inference`](https://arxiv.org/pdf/1901.02731.pdf)
   * [`Gal et al., 2016, Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning`](https://arxiv.org/pdf/1506.02142.pdf)  
   
