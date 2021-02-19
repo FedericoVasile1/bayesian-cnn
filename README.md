@@ -37,7 +37,7 @@ The project is organised as follows:
 
 The code is developed with ***Python 3.7***, ***PyTorch 1.4***.
 
-Regarding the network with Variational Inference, the implementation provided by [`Shridhar et al.`](https://github.com/kumar-shridhar/PyTorch-BayesianCNN) was used, please refer to it for a full description. The repository will be imported under `lib/` folder and used during the project as off-the-shelf framework in oder to build and run the Variational Inference model.
+Regarding the network with Variational Inference, the implementation provided by [Shridhar et al.](https://github.com/kumar-shridhar/PyTorch-BayesianCNN) was used, please refer to it for a full description. The repository will be imported under `lib/` folder and used during the project as off-the-shelf framework in oder to build and run the Variational Inference model.
 
 
 ## Installation
@@ -47,7 +47,7 @@ Regarding the network with Variational Inference, the implementation provided by
   * `run_Project8.ipynb`: contains all installation steps and an example run for this repository.
   
   Other useful notebooks:
-  * `run_PyTorch_BayesianCNN.ipynb`: contains all installation steps and an example run for the only [`external repository`](https://github.com/kumar-shridhar/PyTorch-BayesianCNN)  about Variational Inference implementation.
+  * `run_PyTorch_BayesianCNN.ipynb`: contains all installation steps and an example run for the only [external repository](https://github.com/kumar-shridhar/PyTorch-BayesianCNN)  about Variational Inference implementation.
   * `visualizing_crc.ipynb`: contains simple code to visualize random CRC samples.
       
   ### Opt. 2: Manual installation:
@@ -136,10 +136,10 @@ Regarding the network with Variational Inference, the implementation provided by
     NOTE: for the entire list of arguments check `src/tools/var_inf/eval.py` at the bottom of the module.
 
 ## Documents
-  * [`report`]()
-  * [`presentation`]()
+  * [report]()
+  * [presentation]()
 
 ## Acknowledgements
-  * [`Shridhar et al., 2019, A Comprehensive guide to Bayesian Convolutional Neural Network with Variational Inference`](https://arxiv.org/pdf/1901.02731.pdf)
-  * [`Gal et al., 2016, Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning`](https://arxiv.org/pdf/1506.02142.pdf)  
+  * [Shridhar et al., 2019, A Comprehensive guide to Bayesian Convolutional Neural Network with Variational Inference](https://arxiv.org/pdf/1901.02731.pdf)
+  * [Gal et al., 2016, Dropout as a Bayesian Approximation: Representing Model Uncertainty in Deep Learning](https://arxiv.org/pdf/1506.02142.pdf)  
   
