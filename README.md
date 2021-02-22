@@ -136,8 +136,8 @@ Regarding the network with Variational Inference, the implementation provided by
     NOTE: for the entire list of arguments check `src/tools/var_inf/eval.py` at the bottom of the module.
 
 ## Documents
-  * [report]()
-  * [presentation]()
+  * [report](https://drive.google.com/file/d/1TvDcZxhbcPg9HKvgo1L_UbIG-bJ-xgWa/view?usp=sharing)
+  * [presentation](https://drive.google.com/file/d/1ZAITcbu1DA3YtJh4-v6cAdHTkViuRxvi/view?usp=sharing)
 
 ## Acknowledgements
   * [Shridhar et al., 2019, A Comprehensive guide to Bayesian Convolutional Neural Network with Variational Inference](https://arxiv.org/pdf/1901.02731.pdf)
