@@ -154,36 +154,27 @@ def main(args):
                                     title)
         save_fig_to_tensorboard(fig, writer, title)
 
-        max = -1
-        for t in predicted_class_variance:
-            if max < t.max():
-                max = t.max()
-        range = (0, max)
-
         title = '[{}|K={}]/AllPredictions'.format(args.dataset, args.K)
-        fig = plot_histogram(predicted_class_variance_all, color='b', title=title, range=range)
+        fig = plot_histogram(predicted_class_variance_all, color='b', title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '[{}|K={}]/CorrectPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all],
                              color='green',
-                             title=title,
-                             range=range)
+                             title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '[{}|K={}]/WrongPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all != targets_all],
                              color='red',
-                             title=title,
-                             range=range)
+                             title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '[{}|K={}]/ClassesAllPredictions'.format(args.dataset, args.K)
         fig = plot_histogram_classes(predicted_class_variance_all,
                                      targets_all,
                                      args.class_index,
-                                     title=title,
-                                     range=range)
+                                     title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '[{}|K={}]/ClassesCorrectPredictions'.format(args.dataset, args.K)
@@ -191,8 +182,7 @@ def main(args):
         fig = plot_histogram_classes(predicted_class_variance_all[mask],
                                      targets_all[mask],
                                      args.class_index,
-                                     title=title,
-                                     range=range)
+                                     title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
         title = '[{}|K={}]/ClassesWrongPredictions'.format(args.dataset, args.K)
@@ -200,8 +190,7 @@ def main(args):
         fig = plot_histogram_classes(predicted_class_variance_all[mask],
                                      targets_all[mask],
                                      args.class_index,
-                                     title=title,
-                                     range=range)
+                                     title=title)
         save_fig_to_tensorboard(fig, writer, title)
 
 

@@ -108,8 +108,7 @@ def plot_histogram_classes(data,
                            title=None,
                            show_image=False,
                            xlabel='F(std)',
-                           ylabel='# of images',
-                           range=None):
+                           ylabel='# of images'):
     # hard-coded
     LEGEND = class_index
     STACKED = True
@@ -123,7 +122,7 @@ def plot_histogram_classes(data,
         cls_values = data[target_all == idx]    # cls_values is a torch tensor
         new_data.append(cls_values)
 
-    plot_histogram(new_data, figsize, COLORS, title, show_image, xlabel, ylabel, legend=LEGEND, stacked=STACKED, range=range)
+    plot_histogram(new_data, figsize, COLORS, title, show_image, xlabel, ylabel, legend=LEGEND, stacked=STACKED)
 
 def plot_histogram(data,
                    figsize=(8, 5),
@@ -133,10 +132,9 @@ def plot_histogram(data,
                    xlabel='F(std)',
                    ylabel='# of images',
                    legend=None,
-                   stacked=False,
-                   range=None):
+                   stacked=False):
     figure = plt.figure(figsize=figsize)
-    plt.hist(data, range=range, bins=25, color=color, linewidth=1.2, edgecolor='black', stacked=stacked)
+    plt.hist(data, bins=25, color=color, linewidth=1.2, edgecolor='black', stacked=stacked)
     plt.title(title, color='black')
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
