@@ -161,8 +161,8 @@ def main(args):
         range = (0, max)
 
         title = '[{}|K={}]/AllPredictions'.format(args.dataset, args.K)
-        fig = plot_histogram(predicted_class_variance_all, color='b', title=title)
-        save_fig_to_tensorboard(fig, writer, title, range=range)
+        fig = plot_histogram(predicted_class_variance_all, color='b', title=title, range=range)
+        save_fig_to_tensorboard(fig, writer, title)
 
         title = '[{}|K={}]/CorrectPredictions'.format(args.dataset, args.K)
         fig = plot_histogram(predicted_class_variance_all[predictions_uncertainty_all == targets_all],
