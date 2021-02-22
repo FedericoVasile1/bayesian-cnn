@@ -200,7 +200,6 @@ def stats_classes(dataset_name, class_index, train=True, figsize=(5, 5), show_im
     figure = plt.figure(figsize=figsize)
 
     classes_and_counts = torch.unique(y, sorted=True, return_counts=True)
-    print(classes_and_counts)
     idx_classes = classes_and_counts[0].numpy()
     num_classes = len(idx_classes)
     colors = plt.get_cmap('Blues')(np.linspace(0, 1, num_classes))[::-1]
